@@ -24,3 +24,12 @@ dependencies {
     compile 'com.android.support:support-annotations:23.0.0'
     compile 'com.android.support:support-v4:23.0.0'
 }
+
+ext {
+    libraryName = 'crudcontent'
+    libraryDescription = 'Library providing a content provider to access simple SQLite databases'
+    libraryVersion = project.libraryVersion
+    bintrayDryRun = isDryRun()
+}
+
+apply from: '../bintray.gradle'
