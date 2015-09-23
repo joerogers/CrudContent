@@ -16,11 +16,10 @@
   -->
 
 <manifest
-    xmlns:tools="http://schemas.android.com/tools"
     package="com.forkingcode.crudcontent"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <application tools:ignore="AllowBackup">
+    <application>
         <service
             android:name="com.forkingcode.crudcontent.service.BasicCRUDIntentService"
             android:exported="false">

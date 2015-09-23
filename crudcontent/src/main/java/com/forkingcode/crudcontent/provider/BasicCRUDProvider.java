@@ -21,6 +21,7 @@ import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -36,10 +37,10 @@ import java.util.List;
 /**
  * Basic CRUD (Create, Read, Update, Delete) provider for a single table. Assumes basic
  * matching of either all rows, or by id.
- * <p/>
+ *
  * URI for matching rows should be in form: content://{authority}/{table}
  * URI for matching row by id should be in form: content://{authority}/{table}/{id}
- * <p/>
+ *
  * By default the getType() method will return the following for a directory:
  * vnd.android.cursor.dir/{authority}/table
  * and the following for an individual row:
@@ -71,6 +72,10 @@ public abstract class BasicCRUDProvider extends ContentProvider {
     @Override
     public boolean onCreate() {
         dbHelper = getDbHelper();
+        Context context = getContext();
+        if (context != null) {
+            context.getApplicationContext().registerComponentCallbacks(this);
+        }
         return true;
     }
 
@@ -79,6 +84,10 @@ public abstract class BasicCRUDProvider extends ContentProvider {
      */
     @Override
     public final void shutdown() {
+        Context context = getContext();
+        if (context != null) {
+            context.getApplicationContext().unregisterComponentCallbacks(this);
+        }
         dbHelper.close();
         dbHelper = null;
     }
@@ -106,7 +115,7 @@ public abstract class BasicCRUDProvider extends ContentProvider {
     protected abstract int getConflictAlgorithm(@NonNull String table);
 
     @Override
-    public String getType(Uri uri) {
+    public String getType(@NonNull Uri uri) {
         int match = uriMatcher.match(uri);
         String table;
         switch (match) {
@@ -122,7 +131,7 @@ public abstract class BasicCRUDProvider extends ContentProvider {
     }
 
     @Override
-    public Uri insert(Uri uri, ContentValues values) {
+    public Uri insert(@NonNull Uri uri, ContentValues values) {
         int match = uriMatcher.match(uri);
         String table;
         switch (match) {
@@ -164,7 +173,7 @@ public abstract class BasicCRUDProvider extends ContentProvider {
     }
 
     @Override
-    public int bulkInsert(Uri uri, @NonNull ContentValues[] valuesArray) {
+    public int bulkInsert(@NonNull Uri uri, @NonNull ContentValues[] valuesArray) {
         int match = uriMatcher.match(uri);
         String table;
         switch (match) {
@@ -212,7 +221,7 @@ public abstract class BasicCRUDProvider extends ContentProvider {
     }
 
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection,
+    public Cursor query(@NonNull Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
         int match = uriMatcher.match(uri);
         String table;
@@ -258,7 +267,7 @@ public abstract class BasicCRUDProvider extends ContentProvider {
     }
 
     @Override
-    public int update(Uri uri, ContentValues values, String selection,
+    public int update(@NonNull Uri uri, ContentValues values, String selection,
                       String[] selectionArgs) {
         int match = uriMatcher.match(uri);
         String table;
@@ -306,7 +315,7 @@ public abstract class BasicCRUDProvider extends ContentProvider {
     }
 
     @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs) {
+    public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
         int match = uriMatcher.match(uri);
         String table;
         String useSelection = selection;
@@ -353,14 +362,11 @@ public abstract class BasicCRUDProvider extends ContentProvider {
     @Override
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
-        switch (level) {
-            case ComponentCallbacks2.TRIM_MEMORY_COMPLETE:
-            case ComponentCallbacks2.TRIM_MEMORY_MODERATE:
-            case ComponentCallbacks2.TRIM_MEMORY_BACKGROUND:
-                // In the background lru list. Close the database via
-                // the helper.
-                dbHelper.close();
-                break;
+        if (level >= ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN) {
+            // In the background. Close the database via
+            // the helper. If there is an active connection, it will continue to process
+            // due to reference counting.
+            dbHelper.close();
         }
     }
 
@@ -370,7 +376,10 @@ public abstract class BasicCRUDProvider extends ContentProvider {
      * @param uri the URI for the content that changed.
      */
     protected void notifyChange(Uri uri) {
-        getContext().getContentResolver().notifyChange(uri, null, false);
+        Context context = getContext();
+        if (context != null) {
+            context.getContentResolver().notifyChange(uri, null, false);
+        }
     }
 
     private static void startTransaction(SQLiteDatabase db) {
