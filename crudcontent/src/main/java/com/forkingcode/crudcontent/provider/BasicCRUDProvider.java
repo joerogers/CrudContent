@@ -30,6 +30,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import java.util.List;
@@ -45,6 +46,10 @@ import java.util.List;
  * vnd.android.cursor.dir/{authority}/table
  * and the following for an individual row:
  * vnd.android.cursor.item/{authority}/table
+ *
+ * The following query parameters are supported on the URI:
+ * distinct=true  - informs the query to ensure each row returned is unique.
+ * limit={n} - return only the first "n" rows of data
  */
 public abstract class BasicCRUDProvider extends ContentProvider {
 
@@ -63,6 +68,11 @@ public abstract class BasicCRUDProvider extends ContentProvider {
     private SQLiteOpenHelper dbHelper;
     private final String authority;
 
+    /**
+     * Creates a BasicCRUDProvider.  Invoked by your subclass's constructor.
+     *
+     * @param authority Name of the authority associated with your provider
+     */
     public BasicCRUDProvider(String authority) {
         this.authority = authority;
         uriMatcher.addURI(authority, "*", ALL_ROWS);
@@ -74,24 +84,29 @@ public abstract class BasicCRUDProvider extends ContentProvider {
         dbHelper = getDbHelper();
         Context context = getContext();
         if (context != null) {
-            context.getApplicationContext().registerComponentCallbacks(this);
+            context.registerComponentCallbacks(this);
         }
         return true;
     }
 
     /**
-     * Implemented for tests
+     * Implemented to support unit testing, not needed for standard content providers
      */
     @Override
     public final void shutdown() {
         Context context = getContext();
         if (context != null) {
-            context.getApplicationContext().unregisterComponentCallbacks(this);
+            context.unregisterComponentCallbacks(this);
         }
         dbHelper.close();
         dbHelper = null;
     }
 
+    /**
+     * Override to provide the database helper associated with this provider
+     *
+     * @return The SQLiteOpen helper used to access the database
+     */
     protected abstract SQLiteOpenHelper getDbHelper();
 
     /**
@@ -107,12 +122,19 @@ public abstract class BasicCRUDProvider extends ContentProvider {
     }
 
     /**
-     * Override to provide a conflict algorithm for the specified table.
+     * Override to provide a insert conflict algorithm for the specified table.
+     *
+     * By default it will use SQLiteDatabase.CONFLICT_NONE which is equivalent to
+     * CONFLICT_ABORT per SQLite specification
      *
      * @param table The table to determine the conflict algorithm for.
      * @return SQLiteDatabase conflict algorithm
+     * @see SQLiteDatabase
      */
-    protected abstract int getConflictAlgorithm(@NonNull String table);
+    @SuppressWarnings("UnusedParameters")
+    protected int getConflictAlgorithm(@NonNull String table) {
+        return SQLiteDatabase.CONFLICT_NONE;
+    }
 
     @Override
     public String getType(@NonNull Uri uri) {
@@ -168,7 +190,7 @@ public abstract class BasicCRUDProvider extends ContentProvider {
 
         // notify change essentially indicates to any users with active cursors
         // that they need to "reload" the data
-        notifyChange(uri);
+        notifyChange(getContext(), uri);
         return ContentUris.withAppendedId(uri, id);
     }
 
@@ -215,7 +237,7 @@ public abstract class BasicCRUDProvider extends ContentProvider {
         // notify change essentially indicates to any users with active cursors
         // that they need to "reload" the data
         if (count > 0) {
-            notifyChange(uri);
+            notifyChange(getContext(), uri);
         }
         return count;
     }
@@ -258,7 +280,10 @@ public abstract class BasicCRUDProvider extends ContentProvider {
             // Register the cursor with the requested URI so the caller will receive
             // future database change notifications. Useful for "loaders" which take advantage
             // of this concept.
-            cursor.setNotificationUri(getContext().getContentResolver(), uri);
+            Context context = getContext();
+            if (context != null) {
+                cursor.setNotificationUri(context.getContentResolver(), uri);
+            }
             return cursor;
         }
         finally {
@@ -309,7 +334,7 @@ public abstract class BasicCRUDProvider extends ContentProvider {
         // notify change essentially indicates to any users with active cursors
         // that they need to "reload" the data
         if (rows > 0) {
-            notifyChange(uri);
+            notifyChange(getContext(), uri);
         }
         return rows;
     }
@@ -354,7 +379,7 @@ public abstract class BasicCRUDProvider extends ContentProvider {
         // notify change essentially indicates to any users with active cursors
         // that they need to "reload" the data
         if (rows > 0) {
-            notifyChange(uri);
+            notifyChange(getContext(), uri);
         }
         return rows;
     }
@@ -363,9 +388,9 @@ public abstract class BasicCRUDProvider extends ContentProvider {
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
         if (level >= ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN) {
-            // In the background. Close the database via
-            // the helper. If there is an active connection, it will continue to process
-            // due to reference counting.
+            // In the background. Close the database via the helper.
+            // If there is an active connection, it will continue to process
+            // due to reference counting, and close when all references are released.
             dbHelper.close();
         }
     }
@@ -375,14 +400,15 @@ public abstract class BasicCRUDProvider extends ContentProvider {
      *
      * @param uri the URI for the content that changed.
      */
-    protected void notifyChange(Uri uri) {
-        Context context = getContext();
+    private static void notifyChange(@Nullable Context context, @NonNull Uri uri) {
         if (context != null) {
             context.getContentResolver().notifyChange(uri, null, false);
         }
     }
 
     private static void startTransaction(SQLiteDatabase db) {
+        // If db configured to use write ahead logging, use a non exclusive transaction to permit
+        // both read/write operations at same time
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN && db.isWriteAheadLoggingEnabled()) {
             db.beginTransactionNonExclusive();
         }

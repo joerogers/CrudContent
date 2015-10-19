@@ -20,12 +20,12 @@ package com.example.crudcontent.provider;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Build;
 
 import com.example.crudcontent.BuildConfig;
 
 
 public class DBHelper extends SQLiteOpenHelper {
-    private static final String TAG = "DBHelper";
 
     private static final int DATABASE_VERSION = 1;
     /* package */ static final String DATABASE_NAME = "Test.db";
@@ -49,7 +49,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private DBHelper(Context context) {
         // Using application context since if in a singleton, the helper likely will
-        // outlive the activity, asyncTask etc that starts it.
+        // outlive the activity, asyncTask, provider etc that starts it.
 
         // the "null" indicates we want to use the default cursor factory
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -59,8 +59,11 @@ public class DBHelper extends SQLiteOpenHelper {
         // at same time which improves performance. Essentially a writer will no
         // longer block a reader accessing the database at the same time.
         // This method configures it for the active or next instance.
-        // It can also be used to toggle it off.
-        setWriteAheadLoggingEnabled(true);
+        // The method can also be used to toggle it off. Only supported via method call on
+        // api 16 or higher.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            setWriteAheadLoggingEnabled(true);
+        }
     }
 
     @Override
@@ -70,6 +73,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // No implementation at this time.
+        // No implementation for sample. However, if updating your database version, you
+        // should implement the schema changes here.
     }
 }

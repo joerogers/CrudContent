@@ -16,9 +16,7 @@
 
 package com.example.crudcontent.provider;
 
-import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.support.annotation.NonNull;
 
 import com.forkingcode.crudcontent.provider.BasicCRUDProvider;
 
@@ -26,19 +24,30 @@ import com.forkingcode.crudcontent.provider.BasicCRUDProvider;
 public class SampleBasicCRUDProvider extends BasicCRUDProvider {
 
 
+    /**
+     * Must provide empty constructor in order for Android to instantiate the provider
+     */
     public SampleBasicCRUDProvider() {
         super(UserContract.AUTHORITY);
-    }
-
-    @Override
-    protected int getConflictAlgorithm(@NonNull String table) {
-        // All tables use replace algorithm, however if you need to have different algorithms
-        // per table, the table name parsed from the URI is provided.
-        return SQLiteDatabase.CONFLICT_REPLACE;
     }
 
     @Override
     protected SQLiteOpenHelper getDbHelper() {
         return DBHelper.getInstance(getContext());
     }
+
+    // Note the other method you may want to override is getConflictAlgorithm. By default
+    // BasicCRUDProvider uses SQLiteDatabase.CONFLICT_NONE, however depending on the use case
+    // CONFLICT_ABORT, CONFLICT_IGNORE, CONFLICT_REPLACE, or CONFLICT_FAIL may be more appropriate.
+    // Note: CONFLICT_NONE uses the default for SQLite which is CONFLICT_ABORT
+
+    // Here is a commented out variation, using conflict replace for all tables
+    /*
+    @Override
+    protected int getConflictAlgorithm(@NonNull String table) {
+        // All tables use replace algorithm, however if you need to have different algorithms
+        // per table, the table name parsed from the URI is provided.
+        return SQLiteDatabase.CONFLICT_REPLACE;
+    }
+    */
 }
