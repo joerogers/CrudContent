@@ -22,9 +22,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.ResultReceiver;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.content.LocalBroadcastManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,15 +36,6 @@ import java.util.Collections;
 @SuppressWarnings("unused")
 public class BasicCRUDIntentService extends IntentService {
 
-
-    public static final String ACTION_INSERT_COMPLETE = BasicCRUDIntentService.class.getName() + ".action.insertComplete";
-    public static final String ACTION_BULK_INSERT_COMPLETE = BasicCRUDIntentService.class.getName() + ".action.bulkInsertComplete";
-    public static final String ACTION_UPDATE_COMPLETE = BasicCRUDIntentService.class.getName() + ".action.updateComplete";
-    public static final String ACTION_DELETE_COMPLETE = BasicCRUDIntentService.class.getName() + ".action.deleteComplete";
-
-    public static final String EXTRA_URI = BasicCRUDIntentService.class.getName() + ".extra.uri";
-    public static final String EXTRA_ROWS = BasicCRUDIntentService.class.getName() + ".extra.rows";
-
     private static final String ACTION_INSERT = BasicCRUDIntentService.class.getName() + ".action.insert";
     private static final String ACTION_BULK_INSERT = BasicCRUDIntentService.class.getName() + ".action.bulkInsert";
     private static final String ACTION_UPDATE = BasicCRUDIntentService.class.getName() + ".action.update";
@@ -54,51 +44,8 @@ public class BasicCRUDIntentService extends IntentService {
     private static final String EXTRA_VALUES = BasicCRUDIntentService.class.getName() + ".values";
     private static final String EXTRA_SELECTION = BasicCRUDIntentService.class.getName() + ".selection";
     private static final String EXTRA_SELECTION_ARGS = BasicCRUDIntentService.class.getName() + ".selectionArgs";
+    private static final String EXTRA_RESULT_RECEIVER = BasicCRUDIntentService.class.getName() + ".resultReceiver";
 
-
-    public static void startServiceForInsert(@NonNull Context context, @NonNull Uri uri, @NonNull ContentValues values) {
-        startService(context, ACTION_INSERT, uri, values, null, null);
-    }
-
-    public static void startServiceForBulkInsert(@NonNull Context context, @NonNull Uri uri, @NonNull ContentValues[] values) {
-        ArrayList<ContentValues> list = new ArrayList<>(values.length);
-        Collections.addAll(list, values);
-        startServiceForBulkInsert(context, uri, list);
-    }
-
-    public static void startServiceForBulkInsert(@NonNull Context context, @NonNull Uri uri, @NonNull ArrayList<ContentValues> values) {
-        Intent intent = new Intent(context, BasicCRUDIntentService.class);
-        intent.setAction(ACTION_BULK_INSERT);
-        intent.setData(uri);
-        intent.putExtra(EXTRA_VALUES, values);
-        context.startService(intent);
-    }
-
-    public static void startServiceForUpdate(@NonNull Context context, @NonNull Uri uri, long id, @NonNull ContentValues values) {
-        startServiceForUpdate(context, ContentUris.withAppendedId(uri, id), values, null, null);
-    }
-
-    public static void startServiceForUpdate(@NonNull Context context, @NonNull Uri uri, @NonNull ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
-        startService(context, ACTION_UPDATE, uri, values, selection, selectionArgs);
-    }
-
-    public static void startServiceForDelete(@NonNull Context context, @NonNull Uri uri, long id) {
-        startServiceForDelete(context, ContentUris.withAppendedId(uri, id), null, null);
-    }
-
-    public static void startServiceForDelete(@NonNull Context context, @NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
-        startService(context, ACTION_DELETE, uri, null, selection, selectionArgs);
-    }
-
-    private static void startService(Context context, String action, Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        Intent intent = new Intent(context, BasicCRUDIntentService.class);
-        intent.setAction(action);
-        intent.setData(uri);
-        intent.putExtra(EXTRA_VALUES, values);
-        intent.putExtra(EXTRA_SELECTION, selection);
-        intent.putExtra(EXTRA_SELECTION_ARGS, selectionArgs);
-        context.startService(intent);
-    }
 
     public BasicCRUDIntentService() {
         super("BasicCRUDIntentService");
@@ -127,9 +74,12 @@ public class BasicCRUDIntentService extends IntentService {
 
     private void handleActionInsert(Intent intent) {
         final Uri uri = intent.getData();
-        final ContentValues values = intent.getParcelableExtra(EXTRA_VALUES);
-        Uri insertedUri = getContentResolver().insert(uri, values);
-        sendInsertBroadcast(insertedUri);
+        final ArrayList<ContentValues> values = intent.getParcelableArrayListExtra(EXTRA_VALUES);
+        Uri insertedUri = getContentResolver().insert(uri, values.get(0));
+        ResultReceiver resultReceiver = intent.getParcelableExtra(EXTRA_RESULT_RECEIVER);
+        if (resultReceiver != null) {
+            BasicCrudResultReceiver.sendInsertComplete(resultReceiver, insertedUri);
+        }
     }
 
     private void handleActionBulkInsert(Intent intent) {
@@ -138,16 +88,16 @@ public class BasicCRUDIntentService extends IntentService {
         ContentValues[] values = new ContentValues[valuesList.size()];
         valuesList.toArray(values);
         int rows = getContentResolver().bulkInsert(uri, values);
-        sendRowsBroadcast(ACTION_BULK_INSERT_COMPLETE, rows);
+        sendRowCountResult(intent, BasicCrudResultReceiver.ACTION_BULK_INSERT_COMPLETE, rows);
     }
 
     private void handleActionUpdate(Intent intent) {
         final Uri uri = intent.getData();
-        final ContentValues values = intent.getParcelableExtra(EXTRA_VALUES);
+        final ArrayList<ContentValues> values = intent.getParcelableArrayListExtra(EXTRA_VALUES);
         final String selection = intent.getStringExtra(EXTRA_SELECTION);
         final String[] selectionArgs = intent.getStringArrayExtra(EXTRA_SELECTION_ARGS);
-        int rows = getContentResolver().update(uri, values, selection, selectionArgs);
-        sendRowsBroadcast(ACTION_UPDATE_COMPLETE, rows);
+        int rows = getContentResolver().update(uri, values.get(0), selection, selectionArgs);
+        sendRowCountResult(intent, BasicCrudResultReceiver.ACTION_UPDATE_COMPLETE, rows);
     }
 
     private void handleActionDelete(Intent intent) {
@@ -155,18 +105,108 @@ public class BasicCRUDIntentService extends IntentService {
         final String selection = intent.getStringExtra(EXTRA_SELECTION);
         final String[] selectionArgs = intent.getStringArrayExtra(EXTRA_SELECTION_ARGS);
         int rows = getContentResolver().delete(uri, selection, selectionArgs);
-        sendRowsBroadcast(ACTION_DELETE_COMPLETE, rows);
+        sendRowCountResult(intent, BasicCrudResultReceiver.ACTION_DELETE_COMPLETE, rows);
     }
 
-    private void sendInsertBroadcast(Uri uri) {
-        Intent intent = new Intent(ACTION_INSERT_COMPLETE);
-        intent.putExtra(EXTRA_URI, uri);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    private static void sendRowCountResult(Intent intent, int action, int rowCount) {
+        ResultReceiver resultReceiver = intent.getParcelableExtra(EXTRA_RESULT_RECEIVER);
+        if (resultReceiver != null) {
+            BasicCrudResultReceiver.sendRowCount(resultReceiver, action, rowCount);
+        }
     }
 
-    private void sendRowsBroadcast(String action, int rows) {
-        Intent intent = new Intent(action);
-        intent.putExtra(EXTRA_ROWS, rows);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    public static class IntentBuilder {
+        private final Intent intent;
+        private ArrayList<ContentValues> valuesList;
+        private long id = -1;
+
+        public IntentBuilder(@NonNull Context context) {
+            intent = new Intent(context, BasicCRUDIntentService.class);
+        }
+
+        public IntentBuilder forInsert(@NonNull Uri uri) {
+            setActionAndUri(ACTION_INSERT, uri);
+            return this;
+        }
+
+        public IntentBuilder forBulkInsert(@NonNull Uri uri) {
+            setActionAndUri(ACTION_BULK_INSERT, uri);
+            return this;
+        }
+
+        public IntentBuilder forUpdate(@NonNull Uri uri) {
+            setActionAndUri(ACTION_UPDATE, uri);
+            return this;
+        }
+
+        public IntentBuilder forDelete(@NonNull Uri uri) {
+            setActionAndUri(ACTION_DELETE, uri);
+            return this;
+        }
+
+        public IntentBuilder whereMatchesId(long id) {
+            this.id = id;
+            return this;
+        }
+
+        public IntentBuilder whereSelection(String selection, String[] selectionArgs) {
+            intent.putExtra(EXTRA_SELECTION, selection);
+            intent.putExtra(EXTRA_SELECTION_ARGS, selectionArgs);
+            return this;
+        }
+
+        public IntentBuilder usingValues(@NonNull ContentValues values) {
+            valuesList = new ArrayList<>(1);
+            valuesList.add(values);
+            return this;
+        }
+
+        public IntentBuilder usingValues(@NonNull ContentValues[] values) {
+            valuesList = new ArrayList<>(values.length);
+            Collections.addAll(valuesList, values);
+            return this;
+        }
+
+        public IntentBuilder usingValues(@NonNull ArrayList<ContentValues> values) {
+            valuesList = new ArrayList<>(values);
+            return this;
+        }
+
+        public IntentBuilder setReceiver(@NonNull BasicCrudResultReceiver resultReceiver) {
+            intent.putExtra(EXTRA_RESULT_RECEIVER, resultReceiver);
+            return this;
+        }
+
+        public Intent build() {
+            String action = intent.getAction();
+
+            if (action == null) {
+                throw new IllegalStateException("Must call one of forInsert(), forBulkInsert(), forUpdate(), or forDelete()");
+            }
+
+            if (valuesList != null && !valuesList.isEmpty()) {
+                intent.putExtra(EXTRA_VALUES, valuesList);
+            }
+            else if (!ACTION_DELETE.equals(action)) {
+                throw new IllegalStateException("Must provide ContentValues for insert, bulk insert or update");
+            }
+
+            if (id > 0) {
+                Uri uri = intent.getData();
+                intent.setData(ContentUris.withAppendedId(uri, id));
+                intent.removeExtra(EXTRA_SELECTION);
+                intent.removeExtra(EXTRA_SELECTION_ARGS);
+            }
+
+            return intent;
+        }
+
+        private void setActionAndUri(String action, Uri uri) {
+            if (intent.getAction() != null) {
+                throw new IllegalStateException("Only call one of forInsert(), forBulkInsert(), forUpdate(), or forDelete()");
+            }
+            intent.setAction(action);
+            intent.setData(uri);
+        }
     }
 }
