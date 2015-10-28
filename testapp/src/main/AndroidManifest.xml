@@ -16,7 +16,7 @@
   -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="example.com.crudtester">
+          package="com.example.crudtester">
 
     <application
         android:allowBackup="true"

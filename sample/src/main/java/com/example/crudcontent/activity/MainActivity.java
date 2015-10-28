@@ -16,12 +16,16 @@
 
 package com.example.crudcontent.activity;
 
+import android.content.ContentValues;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.crudcontent.R;
+import com.example.crudcontent.provider.UserContract;
+import com.forkingcode.crudcontent.service.BasicCRUDIntentService;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -30,6 +34,34 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        ContentValues[] valuesArray = new ContentValues[2];
+        ContentValues values = new ContentValues();
+        values.put(UserContract.Columns.NAME, "John Doe");
+        values.put(UserContract.Columns.EMAIL, "john@example.com");
+        valuesArray[0] = values;
+        values = new ContentValues();
+        values.put(UserContract.Columns.NAME, "Jane Doe");
+        values.put(UserContract.Columns.EMAIL, "jane@example.com");
+        valuesArray[1] = values;
+
+        // Create the service Intent.
+        Intent serviceIntent = new BasicCRUDIntentService.IntentBuilder(this)
+                .forBulkInsert(UserContract.URI)
+                .usingValues(valuesArray)
+                /*.setReceiver(new BasicCrudResultReceiver(null) {
+                    @Override
+                    protected void onInsertComplete(Uri uri) {
+                        //Assert.assertNotNull(uri);
+                        //long id = ContentUris.parseId(uri);
+                        //Assert.assertTrue(id > 0);
+                    }
+                })*/
+                .build();
+
+
+        startService(serviceIntent);
+
     }
 
     @Override
