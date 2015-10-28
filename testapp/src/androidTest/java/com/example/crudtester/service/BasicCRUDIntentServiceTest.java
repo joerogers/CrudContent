@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package example.com.crudtester.service;
+package com.example.crudtester.service;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -35,7 +35,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 import java.util.ArrayList;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Basic testcase to test the BasicCRUDIntentService features without a real provider. Essentially
@@ -211,7 +210,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
     }
 
     @Test
-    public void test07MissingAction() throws TimeoutException {
+    public void test07MissingAction() throws Exception {
 
         try {
             new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
@@ -225,7 +224,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
     }
 
     @Test
-    public void test08NullValues() throws TimeoutException {
+    public void test08NullValues() throws Exception {
 
         try {
             new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
@@ -239,7 +238,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
     }
 
     @Test
-    public void test09EmptyValuesArray() throws TimeoutException {
+    public void test09EmptyValuesArray() throws Exception {
 
         try {
             new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
@@ -254,7 +253,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
     }
 
     @Test
-    public void test10EmptyValuesArrayList() throws TimeoutException {
+    public void test10EmptyValuesArrayList() throws Exception {
 
         try {
             new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
