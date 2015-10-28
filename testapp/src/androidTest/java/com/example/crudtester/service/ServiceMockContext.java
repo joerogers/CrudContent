@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package example.com.crudtester.service;
+package com.example.crudtester.service;
 
 import android.content.Context;
 import android.test.IsolatedContext;

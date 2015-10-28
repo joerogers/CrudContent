@@ -17,7 +17,9 @@
 package com.example.crudcontent.provider;
 
 import android.database.sqlite.SQLiteOpenHelper;
+import android.support.annotation.NonNull;
 
+import com.example.crudcontent.BuildConfig;
 import com.forkingcode.crudcontent.provider.BasicCRUDProvider;
 
 
@@ -29,9 +31,11 @@ public class SampleBasicCRUDProvider extends BasicCRUDProvider {
      */
     public SampleBasicCRUDProvider() {
         super(UserContract.AUTHORITY);
+        setLoggingEnabled(BuildConfig.DEBUG);
     }
 
     @Override
+    @NonNull
     protected SQLiteOpenHelper getDbHelper() {
         return DBHelper.getInstance(getContext());
     }
@@ -50,4 +54,9 @@ public class SampleBasicCRUDProvider extends BasicCRUDProvider {
         return SQLiteDatabase.CONFLICT_REPLACE;
     }
     */
+
+    @Override
+    protected int getInsertConflictAlgorithm(@NonNull String table) {
+        return CONFLICT_ROLLBACK;
+    }
 }
