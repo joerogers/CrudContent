@@ -30,7 +30,9 @@ import com.forkingcode.crudcontent.service.BasicCrudResultReceiver;
 
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
@@ -43,6 +45,21 @@ import java.util.ArrayList;
 @RunWith(AndroidJUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentService> {
+
+    // Copy of constants from the BasicCRUDIntentService to avoid exposing publicly
+    private static final String ACTION_INSERT = com.forkingcode.crudcontent.BuildConfig.APPLICATION_ID + ".BasicCRUDIntentService.action.insert";
+    private static final String ACTION_BULK_INSERT = com.forkingcode.crudcontent.BuildConfig.APPLICATION_ID + ".BasicCRUDIntentService.action.bulkInsert";
+    private static final String ACTION_UPDATE = com.forkingcode.crudcontent.BuildConfig.APPLICATION_ID + ".BasicCRUDIntentService.action.update";
+    private static final String ACTION_DELETE = com.forkingcode.crudcontent.BuildConfig.APPLICATION_ID + ".BasicCRUDIntentService.action.delete";
+
+    private static final String EXTRA_VALUES = com.forkingcode.crudcontent.BuildConfig.APPLICATION_ID + ".BasicCRUDIntentService.extra.values";
+    private static final String EXTRA_SELECTION = com.forkingcode.crudcontent.BuildConfig.APPLICATION_ID + ".BasicCRUDIntentService.extra.selection";
+    private static final String EXTRA_SELECTION_ARGS = com.forkingcode.crudcontent.BuildConfig.APPLICATION_ID + ".BasicCRUDIntentService.extra.selectionArgs";
+    private static final String EXTRA_RESULT_RECEIVER = com.forkingcode.crudcontent.BuildConfig.APPLICATION_ID + ".BasicCRUDIntentService.extra.resultReceiver";
+
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     private static final String AUTHORITY = "test";
     private static final String TABLE = "my_table";
@@ -72,24 +89,40 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
 
     @Test
     public void test01Insert() throws Exception {
-        // Should return a valid uri
+
+        // Should return a valid uri in form of: uri/{id}. Mock provider always set id to 1.
         Intent serviceIntent = new BasicCRUDIntentService.IntentBuilder(getContext())
                 .forInsert(uri)
                 .usingValues(new ContentValues())
+
+                        // Receiver is called by intent service to indicate status of the insert
                 .setReceiver(new BasicCrudResultReceiver(null) {
                     @Override
-                    protected void onInsertComplete(Uri uri) {
-                        assertNotNull("Row failed to insert", uri);
-                        long id = ContentUris.parseId(uri);
-                        assertTrue("Invalid id", id > 0);
+                    protected void onInsertComplete(Uri insertResultUri) {
+                        assertNotNull("Row failed to insert", insertResultUri);
+                        assertEquals(uri.getAuthority(), insertResultUri.getAuthority());
+                        long id = ContentUris.parseId(insertResultUri);
+                        assertEquals("Invalid id", ServiceMockContentProvider.INSERT_ID_RESULT, id);
+                        // indicate receiver was called and successful
                         success = true;
                     }
                 })
                 .build();
 
+        // Validate intent
+        assertNotNull(serviceIntent);
+        assertEquals(ACTION_INSERT, serviceIntent.getAction());
+        assertEquals(uri, serviceIntent.getData());
+        assertTrue(serviceIntent.hasExtra(EXTRA_VALUES));
+        assertFalse(serviceIntent.hasExtra(EXTRA_SELECTION));
+        assertFalse(serviceIntent.hasExtra(EXTRA_SELECTION_ARGS));
+        assertTrue(serviceIntent.hasExtra(EXTRA_RESULT_RECEIVER));
+
+        // Start intent service and delay to allow to run
         startService(serviceIntent);
-        // delay to give intent service chance to run
         Thread.sleep(100);
+
+        // Ensure the result receiver was called
         assertTrue(success);
     }
 
@@ -107,163 +140,240 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
                 .setReceiver(new BasicCrudResultReceiver(null) {
                     @Override
                     protected void onBulkInsertComplete(int rows) {
-                        assertEquals(2, rows);
+                        assertEquals(ServiceMockContentProvider.BULK_INSERT_RESULT, rows);
+                        // indicate receiver was called and successful
                         success = true;
                     }
                 })
                 .build();
 
+        // Validate intent
+        assertNotNull(serviceIntent);
+        assertEquals(ACTION_BULK_INSERT, serviceIntent.getAction());
+        assertEquals(uri, serviceIntent.getData());
+        assertTrue(serviceIntent.hasExtra(EXTRA_VALUES));
+        assertFalse(serviceIntent.hasExtra(EXTRA_SELECTION));
+        assertFalse(serviceIntent.hasExtra(EXTRA_SELECTION_ARGS));
+        assertTrue(serviceIntent.hasExtra(EXTRA_RESULT_RECEIVER));
+
+        // Start intent service and delay to allow to run
         startService(serviceIntent);
-        // delay to give intent service chance to run
         Thread.sleep(100);
+
+        // Ensure the result receiver was called
         assertTrue(success);
     }
 
     @Test
     public void test03UpdateById() throws Exception {
 
-        // Returns id as number of rows
+        long id = 2;
 
         Intent serviceIntent = new BasicCRUDIntentService.IntentBuilder(getContext())
                 .forUpdate(uri)
-                .whereMatchesId(23)
+                .whereMatchesId(id)
                 .usingValues(new ContentValues())
                 .setReceiver(new BasicCrudResultReceiver(null) {
                     @Override
                     protected void onUpdateComplete(int rows) {
-                        assertEquals(23, rows);
+                        assertEquals(ServiceMockContentProvider.UPDATE_RESULT, rows);
+                        // indicate receiver was called and successful
                         success = true;
                     }
                 })
                 .build();
 
+        // Validate intent
+        assertNotNull(serviceIntent);
+        assertEquals(ACTION_UPDATE, serviceIntent.getAction());
+        assertEquals(ContentUris.withAppendedId(uri, id), serviceIntent.getData());
+        assertTrue(serviceIntent.hasExtra(EXTRA_VALUES));
+        assertFalse(serviceIntent.hasExtra(EXTRA_SELECTION));
+        assertFalse(serviceIntent.hasExtra(EXTRA_SELECTION_ARGS));
+        assertTrue(serviceIntent.hasExtra(EXTRA_RESULT_RECEIVER));
+
+        // Start intent service and delay to allow to run
         startService(serviceIntent);
         Thread.sleep(100);
+
+        // Ensure the result receiver was called
         assertTrue(success);
     }
 
     @Test
     public void test04UpdateBySelection() throws Exception {
 
-        // Returns number of args...
+        final String selection = "column1 = ? and column2 = ?";
+        final String[] selectionArgs = new String[]{"arg1", "arg2"};
 
         Intent serviceIntent = new BasicCRUDIntentService.IntentBuilder(getContext())
                 .forUpdate(uri)
-                .whereSelection("selection", new String[]{"arg1", "arg2"})
+                .whereSelection(selection, selectionArgs)
                 .usingValues(new ContentValues())
                 .setReceiver(new BasicCrudResultReceiver(null) {
                     @Override
                     protected void onUpdateComplete(int rows) {
-                        assertEquals(2, rows);
+                        assertEquals(ServiceMockContentProvider.UPDATE_RESULT, rows);
+                        // indicate receiver was called and successful
                         success = true;
                     }
                 })
                 .build();
 
+        // Validate intent
+        assertNotNull(serviceIntent);
+        assertEquals(ACTION_UPDATE, serviceIntent.getAction());
+        assertEquals(uri, serviceIntent.getData());
+        assertTrue(serviceIntent.hasExtra(EXTRA_VALUES));
+        assertEquals(selection, serviceIntent.getStringExtra(EXTRA_SELECTION));
+        assertEquals(selectionArgs, serviceIntent.getStringArrayExtra(EXTRA_SELECTION_ARGS));
+        assertTrue(serviceIntent.hasExtra(EXTRA_RESULT_RECEIVER));
+
+        // Start intent service and delay to allow to run
         startService(serviceIntent);
         Thread.sleep(100);
+
+        // Ensure the result receiver was called
         assertTrue(success);
     }
 
     @Test
     public void test05DeleteById() throws Exception {
 
-        // Will return the id as the number of rows.
+        final long id = 4;
 
         Intent serviceIntent = new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
                 .forDelete(uri)
-                .whereMatchesId(5)
+                .whereMatchesId(id)
                 .setReceiver(new BasicCrudResultReceiver(null) {
                     @Override
                     protected void onDeleteComplete(int rows) {
-                        assertEquals(5, rows);
+                        assertEquals(ServiceMockContentProvider.DELETE_RESULT, rows);
+                        // indicate receiver was called and successful
                         success = true;
                     }
                 })
                 .build();
 
+        // Validate intent
+        assertNotNull(serviceIntent);
+        assertEquals(ACTION_DELETE, serviceIntent.getAction());
+        assertEquals(ContentUris.withAppendedId(uri, id), serviceIntent.getData());
+        assertFalse(serviceIntent.hasExtra(EXTRA_VALUES));
+        assertFalse(serviceIntent.hasExtra(EXTRA_SELECTION));
+        assertFalse(serviceIntent.hasExtra(EXTRA_SELECTION_ARGS));
+        assertTrue(serviceIntent.hasExtra(EXTRA_RESULT_RECEIVER));
+
+        // Start intent service and delay to allow to run
         startService(serviceIntent);
         Thread.sleep(100);
+
+        // Ensure the result receiver was called
         assertTrue(success);
     }
 
     @Test
     public void test06DeleteBySelection() throws Exception {
 
-        // Returns number of args...
+        final String selection = "column1 = ? and column2 = ?";
+        final String[] selectionArgs = new String[]{"arg1", "arg2"};
 
         Intent serviceIntent = new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
                 .forDelete(uri)
-                .whereSelection("selection", new String[]{"arg1", "arg2"})
+                .whereSelection(selection, selectionArgs)
                 .setReceiver(new BasicCrudResultReceiver(null) {
                     @Override
                     protected void onDeleteComplete(int rows) {
-                        assertEquals(2, rows);
+                        assertEquals(ServiceMockContentProvider.DELETE_RESULT, rows);
+                        // indicate receiver was called and successful
                         success = true;
                     }
                 })
                 .build();
 
+        // Validate intent
+        assertNotNull(serviceIntent);
+        assertEquals(ACTION_DELETE, serviceIntent.getAction());
+        assertEquals(uri, serviceIntent.getData());
+        assertFalse(serviceIntent.hasExtra(EXTRA_VALUES));
+        assertEquals(selection, serviceIntent.getStringExtra(EXTRA_SELECTION));
+        assertEquals(selectionArgs, serviceIntent.getStringArrayExtra(EXTRA_SELECTION_ARGS));
+        assertTrue(serviceIntent.hasExtra(EXTRA_RESULT_RECEIVER));
+
+        // Start intent service and delay to allow to run
         startService(serviceIntent);
         Thread.sleep(100);
+
+        // Ensure the result receiver was called
         assertTrue(success);
     }
 
     @Test
     public void test07MissingAction() throws Exception {
+        thrown.expect(IllegalStateException.class);
 
-        try {
-            new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
-                    .whereMatchesId(5)
-                    .build();
-        }
-        catch (IllegalStateException e) {
-            success = true;
-        }
-        assertTrue(success);
+        new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
+                .whereMatchesId(5)
+                .build();
     }
 
     @Test
-    public void test08NullValues() throws Exception {
+    public void test08NoContentValuesForInsert() throws Exception {
+        thrown.expect(IllegalStateException.class);
 
-        try {
-            new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
-                    .forInsert(uri)
-                    .build();
-        }
-        catch (IllegalStateException e) {
-            success = true;
-        }
-        assertTrue(success);
+        new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
+                .forInsert(uri)
+                .build();
     }
 
     @Test
-    public void test09EmptyValuesArray() throws Exception {
+    public void test09BothIdAndSelectionProvided() {
+        thrown.expect(IllegalStateException.class);
 
-        try {
-            new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
-                    .forInsert(uri)
-                    .usingValues(new ContentValues[0])
-                    .build();
-        }
-        catch (IllegalStateException e) {
-            success = true;
-        }
-        assertTrue(success);
+        new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
+                .forUpdate(uri)
+                .whereMatchesId(1)
+                .whereSelection("test", null)
+                .build();
     }
 
     @Test
-    public void test10EmptyValuesArrayList() throws Exception {
+    public void test10EmptyValuesArray() throws Exception {
+        thrown.expect(IllegalStateException.class);
 
-        try {
-            new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
-                    .forInsert(uri)
-                    .usingValues(new ArrayList<ContentValues>(0))
-                    .build();
-        }
-        catch (IllegalStateException e) {
-            success = true;
-        }
-        assertTrue(success);
+        new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
+                .forInsert(uri)
+                .usingValues(new ContentValues[0])
+                .build();
+    }
+
+    @Test
+    public void test11EmptyValuesArrayList() throws Exception {
+        thrown.expect(IllegalStateException.class);
+
+        new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
+                .forInsert(uri)
+                .usingValues(new ArrayList<ContentValues>(0))
+                .build();
+    }
+
+    @Test
+    public void test12UsingMultipleRowsWithoutBulkInsert() throws Exception {
+        thrown.expect(IllegalStateException.class);
+
+        new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
+                .forInsert(uri)
+                .usingValues(new ArrayList<ContentValues>(2))
+                .build();
+    }
+
+    @Test
+    public void test13UsingContentValuesWithDelete() throws Exception {
+        thrown.expect(IllegalStateException.class);
+
+        new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
+                .forDelete(uri)
+                .usingValues(new ContentValues())
+                .build();
     }
 }

@@ -25,6 +25,8 @@ import android.net.Uri;
 import android.os.ResultReceiver;
 import android.support.annotation.NonNull;
 
+import com.forkingcode.crudcontent.BuildConfig;
+
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -36,15 +38,15 @@ import java.util.Collections;
 @SuppressWarnings("unused")
 public class BasicCRUDIntentService extends IntentService {
 
-    private static final String ACTION_INSERT = BasicCRUDIntentService.class.getName() + ".action.insert";
-    private static final String ACTION_BULK_INSERT = BasicCRUDIntentService.class.getName() + ".action.bulkInsert";
-    private static final String ACTION_UPDATE = BasicCRUDIntentService.class.getName() + ".action.update";
-    private static final String ACTION_DELETE = BasicCRUDIntentService.class.getName() + ".action.delete";
+    private static final String ACTION_INSERT = BuildConfig.APPLICATION_ID + ".BasicCRUDIntentService.action.insert";
+    private static final String ACTION_BULK_INSERT = BuildConfig.APPLICATION_ID + ".BasicCRUDIntentService.action.bulkInsert";
+    private static final String ACTION_UPDATE = BuildConfig.APPLICATION_ID + ".BasicCRUDIntentService.action.update";
+    private static final String ACTION_DELETE = BuildConfig.APPLICATION_ID + ".BasicCRUDIntentService.action.delete";
 
-    private static final String EXTRA_VALUES = BasicCRUDIntentService.class.getName() + ".values";
-    private static final String EXTRA_SELECTION = BasicCRUDIntentService.class.getName() + ".selection";
-    private static final String EXTRA_SELECTION_ARGS = BasicCRUDIntentService.class.getName() + ".selectionArgs";
-    private static final String EXTRA_RESULT_RECEIVER = BasicCRUDIntentService.class.getName() + ".resultReceiver";
+    private static final String EXTRA_VALUES = BuildConfig.APPLICATION_ID + ".BasicCRUDIntentService.extra.values";
+    private static final String EXTRA_SELECTION = BuildConfig.APPLICATION_ID + ".BasicCRUDIntentService.extra.selection";
+    private static final String EXTRA_SELECTION_ARGS = BuildConfig.APPLICATION_ID + ".BasicCRUDIntentService.extra.selectionArgs";
+    private static final String EXTRA_RESULT_RECEIVER = BuildConfig.APPLICATION_ID + ".BasicCRUDIntentService.extra.resultReceiver";
 
 
     public BasicCRUDIntentService() {
@@ -58,17 +60,20 @@ public class BasicCRUDIntentService extends IntentService {
         }
 
         final String action = intent.getAction();
-        if (ACTION_INSERT.equals(action)) {
-            handleActionInsert(intent);
-        }
-        else if (ACTION_UPDATE.equals(action)) {
-            handleActionUpdate(intent);
-        }
-        else if (ACTION_DELETE.equals(action)) {
-            handleActionDelete(intent);
-        }
-        else if (ACTION_BULK_INSERT.equals(action)) {
-            handleActionBulkInsert(intent);
+
+        switch (action) {
+            case ACTION_INSERT:
+                handleActionInsert(intent);
+                break;
+            case ACTION_BULK_INSERT:
+                handleActionBulkInsert(intent);
+                break;
+            case ACTION_UPDATE:
+                handleActionUpdate(intent);
+                break;
+            case ACTION_DELETE:
+                handleActionDelete(intent);
+                break;
         }
     }
 
@@ -144,23 +149,53 @@ public class BasicCRUDIntentService extends IntentService {
             return this;
         }
 
+        /**
+         * Performs the operation where matches a specific row of data by id
+         *
+         * @param id The id associated with the row in the database
+         * @return this intent builder
+         */
         public IntentBuilder whereMatchesId(long id) {
+            if (intent.hasExtra(EXTRA_SELECTION)) {
+                throw new IllegalStateException("Only call one of whereMatchesId and whereSelection");
+            }
             this.id = id;
             return this;
         }
 
+        /**
+         * Performs the operation where matches a specific selection with optional arguments
+         *
+         * @param selection     The selection clause for the update or delete
+         * @param selectionArgs Optional arguments to bind to the selection. Note, best practice
+         *                      is to use binding to avoid sql injection.
+         * @return this intent builder
+         */
         public IntentBuilder whereSelection(String selection, String[] selectionArgs) {
+            if (id != -1) {
+                throw new IllegalStateException("Only call one of whereMatchesId and whereSelection");
+            }
             intent.putExtra(EXTRA_SELECTION, selection);
             intent.putExtra(EXTRA_SELECTION_ARGS, selectionArgs);
             return this;
         }
 
+        /**
+         * Provide a single row of values for the insert, or update operation
+         * @param values The content values indicating the columns/value pairs for the operation
+         * @return this intent builder
+         */
         public IntentBuilder usingValues(@NonNull ContentValues values) {
             valuesList = new ArrayList<>(1);
             valuesList.add(values);
             return this;
         }
 
+        /**
+         * Provide multiple rows of values for the bulk insert operation
+         * @param values The content values array indicating the columns/value pairs for the operation
+         * @return this intent builder
+         */
         public IntentBuilder usingValues(@NonNull ContentValues[] values) {
             valuesList = new ArrayList<>(values.length);
             Collections.addAll(valuesList, values);
@@ -186,6 +221,13 @@ public class BasicCRUDIntentService extends IntentService {
 
             if (valuesList != null && !valuesList.isEmpty()) {
                 intent.putExtra(EXTRA_VALUES, valuesList);
+
+                if (valuesList.size() > 1 && !ACTION_BULK_INSERT.equals(action)) {
+                    throw new IllegalStateException("Multiple rows of data provided to insert/update operation");
+                }
+                else if (ACTION_DELETE.equals(action)) {
+                    throw new IllegalStateException("Providing content values for delete operation");
+                }
             }
             else if (!ACTION_DELETE.equals(action)) {
                 throw new IllegalStateException("Must provide ContentValues for insert, bulk insert or update");
@@ -194,8 +236,6 @@ public class BasicCRUDIntentService extends IntentService {
             if (id > 0) {
                 Uri uri = intent.getData();
                 intent.setData(ContentUris.withAppendedId(uri, id));
-                intent.removeExtra(EXTRA_SELECTION);
-                intent.removeExtra(EXTRA_SELECTION_ARGS);
             }
 
             return intent;

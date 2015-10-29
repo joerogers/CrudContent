@@ -1,1 +1,1 @@
-include ':crudcontent', ':sample'
+include ':crudcontent', ':sample', ':testapp'

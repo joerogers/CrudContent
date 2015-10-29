@@ -15,5 +15,5 @@
   -->
 
 <resources>
-    <string name="app_name">CrudTester</string>
+  <string name="app_name">BasicCRUD Test App</string>
 </resources>

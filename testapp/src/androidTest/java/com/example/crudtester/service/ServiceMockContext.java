@@ -31,7 +31,7 @@ public class ServiceMockContext extends IsolatedContext {
 
     public static MockContentResolver buildContentResolver(String authority) {
         MockContentResolver contentResolver = new MockContentResolver();
-        contentResolver.addProvider(authority, new ServiceMockContentProvider(authority));
+        contentResolver.addProvider(authority, new ServiceMockContentProvider());
         return contentResolver;
     }
 }
