@@ -63,4 +63,24 @@ public class TestBasicCRUDProvider extends BasicCRUDProvider {
                 throw new IllegalArgumentException("Unexpected table");
         }
     }
+
+    /**
+     * For testing, return the appropriate conflict algorithm based on the contract used for testing
+     *
+     * @param table The table to determine the conflict algorithm for.
+     * @return the conflict algorithm
+     */
+    @Override
+    protected int getUpdateConflictAlgorithm(@NonNull String table) {
+        switch (table) {
+            case IgnoreContract.TABLE:
+                return CONFLICT_IGNORE;
+            case ReplaceContract.TABLE:
+                return CONFLICT_REPLACE;
+            case RollbackContract.TABLE:
+                return CONFLICT_ROLLBACK;
+            default:
+                throw new IllegalArgumentException("Unexpected table");
+        }
+    }
 }
