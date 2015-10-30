@@ -61,10 +61,16 @@ import java.util.List;
  * The following query parameters are supported on the URI:
  * distinct=true  - informs the query to ensure each row returned is unique.
  * limit={n} - return only the first "n" rows of data
+ * <p/>
+ * Note: if any errors occur in bulkInsert, update, or delete the provider will return 0
+ * to indicate an error occurred. Depending on the conflict method the following will
+ * happen:
  *
- * Note: if any errors occur in bulkInsert, update, or delete the provider will return -1
- * to indicate an error occurred. 0 will be returned if the operation had no effect, but
- * no error occurs.  If logging is enabled, more data on the errors will be recorded.
+ * ROLLBACK - 0 or n rows.  Essentially an all or nothing operation.
+ * IGNORE - 0 to n rows. 0 is 100% failure, n is 100% success, n/2 = 50% success, etc
+ * REPLACE - n rows, should always be 100% successful
+ *
+ * If logging is enabled, more data on the errors will be recorded.
  */
 public abstract class BasicCRUDProvider extends ContentProvider {
 
@@ -253,7 +259,10 @@ public abstract class BasicCRUDProvider extends ContentProvider {
             startTransaction(db);
             try {
                 id = db.insertWithOnConflict(table, getNullColumnHack(table), values, conflictAlgorithm);
-                db.setTransactionSuccessful();
+
+                if (id != -1) {
+                    db.setTransactionSuccessful();
+                }
             }
             catch (SQLiteException e) {
                 if (LOGGING_ENABLED) {
@@ -327,7 +336,7 @@ public abstract class BasicCRUDProvider extends ContentProvider {
                 if (LOGGING_ENABLED && !(e instanceof SQLiteConstraintException)) {
                     Log.e(TAG, "Unexpected error bulk inserting " + table, e);
                 }
-                count = -1;
+                count = 0;
             }
             finally {
                 db.endTransaction();
