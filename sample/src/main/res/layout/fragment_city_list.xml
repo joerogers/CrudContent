@@ -1,0 +1,56 @@
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools">
+
+    <!--suppress AndroidUnknownAttribute -->
+    <data class="CityListFragmentBindings">
+
+        <variable
+            name="listeners"
+            type="com.example.crudcontent.fragment.CityListFragment"/>
+    </data>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.example.crudcontent.fragment.CityListFragment">
+
+        <FrameLayout
+            android:id="@+id/list_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <!--suppress AndroidUnknownAttribute -->
+            <ListView
+                android:id="@+id/list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:onItemClick="@{listeners.onCityClick}"
+                android:paddingBottom="8dp"
+                android:paddingTop="8dp"
+                tools:listitem="@layout/adapter_item_city"/>
+
+            <TextView
+                android:id="@+id/empty"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:paddingBottom="@dimen/activity_vertical_margin"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:paddingTop="@dimen/activity_vertical_margin"
+                android:text="@string/empty_city_list"
+                android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+                android:visibility="gone"/>
+        </FrameLayout>
+
+        <ProgressBar
+            android:id="@+id/progress"
+            style="?android:progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"/>
+
+    </FrameLayout>
+</layout>

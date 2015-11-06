@@ -1,32 +1,38 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.android.databinding'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.1"
+    buildToolsVersion "23.0.2"
+
     defaultConfig {
-        applicationId 'com.example.crudcontent'
-        minSdkVersion 14
+        applicationId "com.example.crudcontent"
+        minSdkVersion 16
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        generatedDensities = ['mdpi', 'hdpi', 'xhdpi', 'xxhdpi']
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
-    }
-    productFlavors {
+        debug {
+            applicationIdSuffix '.debug'
+            versionNameSuffix '.debug'
+            debuggable true
+        }
     }
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:23.1.0'
-    compile project(':crudcontent')
     compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:support-annotations:23.1.0'
+    compile 'com.android.support:support-v4:23.1.0'
+    compile 'com.android.support:appcompat-v7:23.1.0'
+    compile 'com.android.support:design:23.1.0'
 
-    androidTestCompile 'com.android.support:support-annotations:23.1.0'
-    androidTestCompile 'com.android.support.test:runner:0.4.1'
-    androidTestCompile 'com.android.support.test:rules:0.4.1'
+    // Use this to compile directly with project
+    compile project(':crudcontent')
 }

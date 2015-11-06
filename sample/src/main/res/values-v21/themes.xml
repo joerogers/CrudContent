@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="BaseAppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Platform compatibility theme here. API 21 only -->
+        <!-- Demonstrating taking advantage of 5.0 (lollipop) auto coloring vs asset -->
+        <item name="android:colorButtonNormal">?colorAccent</item>
+    </style>
+
+    <style name="BaseThemeOverlayDarkActionBar" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
+        <!-- Platform compatibility theme here. API 21 only -->
+        <item name="android:elevation">@dimen/action_bar_elevation</item>
+    </style>
+</resources>
