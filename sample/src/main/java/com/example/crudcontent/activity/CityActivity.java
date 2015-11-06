@@ -115,7 +115,7 @@ public class CityActivity extends AppCompatActivity
             // Also check the "bindings", just in case the activity is in process of being destroyed
             // and the bindings have been released.
             if (activity != null && activity.bindings != null) {
-                Snackbar.make(activity.bindings.coordinatorLayout, R.string.states_created, Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(activity.bindings.coordinatorLayout, R.string.states_created, Snackbar.LENGTH_LONG).show();
             }
         }
     }
