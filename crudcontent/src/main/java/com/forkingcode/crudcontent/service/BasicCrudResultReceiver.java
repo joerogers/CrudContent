@@ -42,7 +42,7 @@ public class BasicCrudResultReceiver extends ResultReceiver {
     }
 
     /* package */
-    static final void sendRowCount(ResultReceiver resultReceiver, int resultCode, int rowCount) {
+    static void sendRowCount(ResultReceiver resultReceiver, int resultCode, int rowCount) {
         Bundle resultData = new Bundle();
         resultData.putInt(EXTRA_DATA, rowCount);
         resultReceiver.send(resultCode, resultData);
@@ -67,18 +67,22 @@ public class BasicCrudResultReceiver extends ResultReceiver {
         }
     }
 
+    @SuppressWarnings("UnusedParameters")
     protected void onInsertComplete(Uri uri) {
 
     }
 
+    @SuppressWarnings("UnusedParameters")
     protected void onBulkInsertComplete(int rows) {
 
     }
 
+    @SuppressWarnings("UnusedParameters")
     protected void onUpdateComplete(int rows) {
 
     }
 
+    @SuppressWarnings("UnusedParameters")
     protected void onDeleteComplete(int rows) {
 
     }

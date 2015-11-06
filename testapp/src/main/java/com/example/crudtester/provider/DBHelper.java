@@ -28,7 +28,7 @@ import com.example.crudtester.BuildConfig;
 public class DBHelper extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 1;
-    /* package */ static final String DATABASE_NAME = "Test.db";
+    private static final String DATABASE_NAME = "Test.db";
 
     private static DBHelper dbHelper;
 

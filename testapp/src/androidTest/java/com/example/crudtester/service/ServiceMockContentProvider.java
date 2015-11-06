@@ -16,6 +16,7 @@
 
 package com.example.crudtester.service;
 
+import android.annotation.SuppressLint;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.net.Uri;
@@ -24,6 +25,7 @@ import android.test.mock.MockContentProvider;
 /**
  * Mock provider "pretending" it talks to a database with hardcoded results
  */
+@SuppressLint("Registered")
 public class ServiceMockContentProvider extends MockContentProvider {
 
     public static final long INSERT_ID_RESULT = 1;

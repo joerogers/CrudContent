@@ -75,7 +75,7 @@ public abstract class BaseBasicCRUDProviderTest extends ProviderTestCase2<TestBa
     protected abstract String getTable();
 
     @NonNull
-    public abstract Uri getUri();
+    protected abstract Uri getUri();
 
     @NonNull
     public abstract String getUniqueColumn();
@@ -86,7 +86,7 @@ public abstract class BaseBasicCRUDProviderTest extends ProviderTestCase2<TestBa
      * @return the appropriate column name
      */
     @NonNull
-    public abstract String getDistinctColumn();
+    protected abstract String getDistinctColumn();
 
     public void test01GetType() throws Exception {
         // Verify the right type is returned using the standard URI
