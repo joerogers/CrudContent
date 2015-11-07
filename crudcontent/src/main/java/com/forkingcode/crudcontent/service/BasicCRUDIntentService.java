@@ -34,6 +34,8 @@ import java.util.Collections;
 /**
  * Intent service for running common DB operations in the background. The service
  * will broadcast complete actions using the LocalBroadcastManager after each operation.
+ *
+ * @see com.forkingcode.crudcontent.service.BasicCRUDIntentService.IntentBuilder
  */
 @SuppressWarnings("unused")
 public class BasicCRUDIntentService extends IntentService {
@@ -120,37 +122,74 @@ public class BasicCRUDIntentService extends IntentService {
         }
     }
 
+    /**
+     * Helper class used to build an intent for starting the BasicCRUDIntentService.
+     */
     public static class IntentBuilder {
         private final Intent intent;
         private ArrayList<ContentValues> valuesList;
         private long id = -1;
 
+        /**
+         * Create a new intent builder
+         *
+         * @param context Context used to build the Intent
+         */
         public IntentBuilder(@NonNull Context context) {
             intent = new Intent(context, BasicCRUDIntentService.class);
         }
 
+        /**
+         * Indicate want to perform an insert operation with the service. Only one "for"
+         * operation may be provided per Intent
+         *
+         * @param uri The URI for the provider/table you wish to insert into
+         * @return this intent builder
+         */
         public IntentBuilder forInsert(@NonNull Uri uri) {
             setActionAndUri(ACTION_INSERT, uri);
             return this;
         }
 
+        /**
+         * Indicate want to perform a bulk insert operation with the service. Only one "for"
+         * operation may be provided per Intent
+         *
+         * @param uri The URI for the provider/table you wish to insert into
+         * @return this intent builder
+         */
         public IntentBuilder forBulkInsert(@NonNull Uri uri) {
             setActionAndUri(ACTION_BULK_INSERT, uri);
             return this;
         }
 
+        /**
+         * Indicate want to perform an update operation with the service. Only one "for"
+         * operation may be provided per Intent
+         *
+         * @param uri The URI for the provider/table you wish to update
+         * @return this intent builder
+         */
         public IntentBuilder forUpdate(@NonNull Uri uri) {
             setActionAndUri(ACTION_UPDATE, uri);
             return this;
         }
 
+        /**
+         * Indicate want to perform a delete operation with the service. Only one "for"
+         * operation may be provided per Intent
+         *
+         * @param uri The URI for the provider/table you wish to delete from
+         * @return this intent builder
+         */
         public IntentBuilder forDelete(@NonNull Uri uri) {
             setActionAndUri(ACTION_DELETE, uri);
             return this;
         }
 
         /**
-         * Performs the operation where matches a specific row of data by id
+         * Performs the operation where matches a specific row of data by id. Must not use
+         * with whereSelection
          *
          * @param id The id associated with the row in the database
          * @return this intent builder
@@ -164,7 +203,8 @@ public class BasicCRUDIntentService extends IntentService {
         }
 
         /**
-         * Performs the operation where matches a specific selection with optional arguments
+         * Performs the operation where matches a specific selection with optional arguments. Must
+         * not use with whereMatchesId
          *
          * @param selection     The selection clause for the update or delete
          * @param selectionArgs Optional arguments to bind to the selection. Note, best practice
@@ -182,6 +222,7 @@ public class BasicCRUDIntentService extends IntentService {
 
         /**
          * Provide a single row of values for the insert, or update operation
+         *
          * @param values The content values indicating the columns/value pairs for the operation
          * @return this intent builder
          */
@@ -192,7 +233,8 @@ public class BasicCRUDIntentService extends IntentService {
         }
 
         /**
-         * Provide multiple rows of values for the bulk insert operation
+         * Provide multiple rows of values for the bulk insert operation via an array
+         *
          * @param values The content values array indicating the columns/value pairs for the operation
          * @return this intent builder
          */
@@ -202,16 +244,36 @@ public class BasicCRUDIntentService extends IntentService {
             return this;
         }
 
+        /**
+         * Provide multiple rows of values for the bulk insert operation via an ArrayList
+         *
+         * @param values The content values array indicating the columns/value pairs for the operation
+         * @return this intent builder
+         */
         public IntentBuilder usingValues(@NonNull ArrayList<ContentValues> values) {
             valuesList = new ArrayList<>(values);
             return this;
         }
 
-        public IntentBuilder setReceiver(@NonNull BasicCrudResultReceiver resultReceiver) {
+        /**
+         * Provide the result receiver for the operation. This will serve as the callback mechanism
+         * for the result of the operation.
+         *
+         * @param resultReceiver The result receiver to use for callbacks
+         * @return this intent builder
+         * @see BasicCrudResultReceiver
+         */
+        public IntentBuilder setResultReceiver(@NonNull BasicCrudResultReceiver resultReceiver) {
             intent.putExtra(EXTRA_RESULT_RECEIVER, resultReceiver);
             return this;
         }
 
+        /**
+         * Build and validate the intent.
+         *
+         * @return The new intent to use to invoke the BasicCRUDIntentService
+         * @see BasicCRUDIntentService
+         */
         public Intent build() {
             String action = intent.getAction();
 

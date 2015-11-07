@@ -64,7 +64,7 @@ public class CityActivity extends AppCompatActivity
             Intent intent = new BasicCRUDIntentService.IntentBuilder(this)
                     .forBulkInsert(StateContract.URI)
                     .usingValues(StateContract.buildStateValuesArray())
-                    .setReceiver(new StatesCreatedResultReceiver(this))
+                    .setResultReceiver(new StatesCreatedResultReceiver(this))
                     .build();
 
             // Ensure state data exists

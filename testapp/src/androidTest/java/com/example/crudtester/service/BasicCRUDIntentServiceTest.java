@@ -96,7 +96,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
                 .usingValues(new ContentValues())
 
                         // Receiver is called by intent service to indicate status of the insert
-                .setReceiver(new BasicCrudResultReceiver(null) {
+                .setResultReceiver(new BasicCrudResultReceiver(null) {
                     @Override
                     protected void onInsertComplete(Uri insertResultUri) {
                         assertNotNull("Row failed to insert", insertResultUri);
@@ -137,7 +137,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
         Intent serviceIntent = new BasicCRUDIntentService.IntentBuilder(getContext())
                 .forBulkInsert(uri)
                 .usingValues(valuesArray)
-                .setReceiver(new BasicCrudResultReceiver(null) {
+                .setResultReceiver(new BasicCrudResultReceiver(null) {
                     @Override
                     protected void onBulkInsertComplete(int rows) {
                         assertEquals(ServiceMockContentProvider.BULK_INSERT_RESULT, rows);
@@ -173,7 +173,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
                 .forUpdate(uri)
                 .whereMatchesId(id)
                 .usingValues(new ContentValues())
-                .setReceiver(new BasicCrudResultReceiver(null) {
+                .setResultReceiver(new BasicCrudResultReceiver(null) {
                     @Override
                     protected void onUpdateComplete(int rows) {
                         assertEquals(ServiceMockContentProvider.UPDATE_RESULT, rows);
@@ -210,7 +210,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
                 .forUpdate(uri)
                 .whereSelection(selection, selectionArgs)
                 .usingValues(new ContentValues())
-                .setReceiver(new BasicCrudResultReceiver(null) {
+                .setResultReceiver(new BasicCrudResultReceiver(null) {
                     @Override
                     protected void onUpdateComplete(int rows) {
                         assertEquals(ServiceMockContentProvider.UPDATE_RESULT, rows);
@@ -245,7 +245,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
         Intent serviceIntent = new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
                 .forDelete(uri)
                 .whereMatchesId(id)
-                .setReceiver(new BasicCrudResultReceiver(null) {
+                .setResultReceiver(new BasicCrudResultReceiver(null) {
                     @Override
                     protected void onDeleteComplete(int rows) {
                         assertEquals(ServiceMockContentProvider.DELETE_RESULT, rows);
@@ -281,7 +281,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
         Intent serviceIntent = new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
                 .forDelete(uri)
                 .whereSelection(selection, selectionArgs)
-                .setReceiver(new BasicCrudResultReceiver(null) {
+                .setResultReceiver(new BasicCrudResultReceiver(null) {
                     @Override
                     protected void onDeleteComplete(int rows) {
                         assertEquals(ServiceMockContentProvider.DELETE_RESULT, rows);

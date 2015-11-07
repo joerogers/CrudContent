@@ -21,6 +21,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
 
+/**
+ * Wrapper around a standard ResultReceiver. It provides friendly methods to know
+ * when an operation is complete.
+ * @see ResultReceiver
+ */
 public class BasicCrudResultReceiver extends ResultReceiver {
 
     /* package */ static final int ACTION_INSERT_COMPLETE = 1;
@@ -30,6 +35,14 @@ public class BasicCrudResultReceiver extends ResultReceiver {
 
     private static final String EXTRA_DATA = "BasicCrudResultReceiver.extra.data";
 
+    /**
+     * Constructor
+     * @param handler Your
+     * {@link #onInsertComplete(Uri)}, {@link #onBulkInsertComplete(int)},
+     * {@link #onUpdateComplete(int)}, or {@link #onDeleteComplete(int)}
+     * method will be called from the thread running
+     * <var>handler</var> if given, or from an arbitrary thread if null.
+     */
     public BasicCrudResultReceiver(Handler handler) {
         super(handler);
     }
@@ -67,11 +80,19 @@ public class BasicCrudResultReceiver extends ResultReceiver {
         }
     }
 
+    /**
+     * Called for insert operations.
+     * @param uri The URI of the specific row that was inserted, null if insertion failed
+     */
     @SuppressWarnings("UnusedParameters")
     protected void onInsertComplete(Uri uri) {
 
     }
 
+    /**
+     * Called for bulk insert operations.
+     * @param rows The number of rows successfully inserted. Depending on the
+     */
     @SuppressWarnings("UnusedParameters")
     protected void onBulkInsertComplete(int rows) {
 

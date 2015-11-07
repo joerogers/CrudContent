@@ -45,30 +45,30 @@ import java.util.List;
 /**
  * Basic CRUD (Create, Read, Update, Delete) provider for a single table. Assumes basic
  * matching of either all rows, or by id.
- * <p/>
+ *
  * The provider uses transactions for insert, update and deletes to provide optimal performance
  * and the ability to cleanly implement rollbacks. It will use the proper type of transaction
  * depending on if write ahead logging is enabled on the database.
- * <p/>
+ *
  * URI for matching rows should be in form: content://{authority}/{table}
  * URI for matching row by id should be in form: content://{authority}/{table}/{id}
- * <p/>
+ *
  * By default the getType() method will return the following for a directory:
  * vnd.android.cursor.dir/{authority}/table
  * and the following for an individual row:
  * vnd.android.cursor.item/{authority}/table
- * <p/>
+ *
  * The following query parameters are supported on the URI:
  * distinct=true  - informs the query to ensure each row returned is unique.
  * limit={n} - return only the first "n" rows of data
- * <p/>
+ *
  * Note: if any errors occur in bulkInsert, update, or delete the provider will return 0
  * to indicate an error occurred. Depending on the conflict method the following will
  * happen:
  *
- * ROLLBACK - 0 or n rows.  Essentially an all or nothing operation.
- * IGNORE - 0 to n rows. 0 is 100% failure, n is 100% success, n/2 = 50% success, etc
- * REPLACE - n rows, should always be 100% successful
+ * CONFLICT_ROLLBACK - 0 or n rows.  Essentially an all or nothing operation.
+ * CONFLICT_IGNORE - 0 to n rows. 0 is 100% failure, n is 100% success, n/2 = 50% success, etc
+ * CONFLICT_REPLACE - n rows, should always be 100% successful
  *
  * If logging is enabled, more data on the errors will be recorded.
  */
@@ -97,7 +97,7 @@ public abstract class BasicCRUDProvider extends ContentProvider {
     /**
      * CONFLICT_ROLLBACK - all inserts (bulk or single), or updates will be rolled back on any
      * data conflict or unexpected error that occurs with the sql command.
-     * <p/>
+     *
      * Essentially behaves like CONFLICT_ROLLBACK, but uses CONFLICT_NONE (aka CONFLICT_ABORT) to
      * detect errors, but this implementation of the provider will always rollback the transaction.
      *
@@ -117,7 +117,7 @@ public abstract class BasicCRUDProvider extends ContentProvider {
     /**
      * CONFLICT_REPLACE - all inserts (bulk or single), that result in a data conflict
      * will be removed, and the new row will be inserted in its place.
-     * <p/>
+     *
      * For updates that result in conflict, the data resulting in the conflict will be removed
      * prior to the update for the row completing.
      *
@@ -188,7 +188,7 @@ public abstract class BasicCRUDProvider extends ContentProvider {
 
     /**
      * Override to provide a insert conflict algorithm for the specified table.
-     * <p/>
+     *
      * By default it will use CONFLICT_ROLLBACK which will roll back the insert
      * operation if a conflict occurs leaving the database unchanged.
      *
@@ -204,7 +204,7 @@ public abstract class BasicCRUDProvider extends ContentProvider {
 
     /**
      * Override to provide an update conflict algorithm for the specified table.
-     * <p/>
+     *
      * By default it will use CONFLICT_ROLLBACK which will roll back the update
      * operation if a conflict occurs leaving the database unchanged.
      *
@@ -528,6 +528,15 @@ public abstract class BasicCRUDProvider extends ContentProvider {
         return rows;
     }
 
+    /**
+     * The provider will close the database when the UI is hidden or in the background.
+     * If there is an active connection, it will continue to process
+     * due to explicit reference counting added via this provider implementation.
+     * The database will close when all references are released.
+     *
+     * @param level the trim level requested by the OS
+     * @see ComponentCallbacks2
+     */
     @Override
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
