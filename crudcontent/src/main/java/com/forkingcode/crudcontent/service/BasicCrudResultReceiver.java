@@ -24,7 +24,19 @@ import android.os.ResultReceiver;
 /**
  * Wrapper around a standard ResultReceiver. It provides friendly methods to know
  * when an operation is complete.
+ *
+ * <p>This is called asynchronously. It is recommended that you do not implicitly
+ * reference activities, views, etc via the receiver. If you need to access the activity,
+ * it is recommended use a {@link java.lang.ref.WeakReference} to hold the activity or some
+ * other mechanism such as a LocalBroadcastReceiver such that the receiver
+ * doesn't have direct access to the activity.
+ * The weak reference allows the activity to be destroyed even if the database operation is
+ * ongoing. The code should no-op if the activity is null when the result arrives.
+ * See the sample CityActivity for an example of how to do this.
+ *
  * @see ResultReceiver
+ * @see java.lang.ref.WeakReference
+ * @see <a href="https://developer.android.com/reference/android/support/v4/content/LocalBroadcastManager.html">LocalBroadcastReceiver</a>
  */
 public class BasicCrudResultReceiver extends ResultReceiver {
 
@@ -61,6 +73,11 @@ public class BasicCrudResultReceiver extends ResultReceiver {
         resultReceiver.send(resultCode, resultData);
     }
 
+    /**
+     * Parses the result and calls the appropriate callback.
+     * @param resultCode code indicating type of result being sent
+     * @param resultData bundle containing the values of the result.
+     */
     @Override
     protected final void onReceiveResult(int resultCode, Bundle resultData) {
         switch (resultCode) {
@@ -91,18 +108,26 @@ public class BasicCrudResultReceiver extends ResultReceiver {
 
     /**
      * Called for bulk insert operations.
-     * @param rows The number of rows successfully inserted. Depending on the
+     * @param rows The number of rows successfully inserted.
      */
     @SuppressWarnings("UnusedParameters")
     protected void onBulkInsertComplete(int rows) {
 
     }
 
+    /**
+     * Called for bulk insert operations.
+     * @param rows The number of rows successfully updated.
+     */
     @SuppressWarnings("UnusedParameters")
     protected void onUpdateComplete(int rows) {
 
     }
 
+    /**
+     * Called for bulk insert operations.
+     * @param rows The number of rows successfully deleted.
+     */
     @SuppressWarnings("UnusedParameters")
     protected void onDeleteComplete(int rows) {
 

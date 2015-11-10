@@ -46,38 +46,81 @@ import java.util.List;
  * Basic CRUD (Create, Read, Update, Delete) provider for a single table. Assumes basic
  * matching of either all rows, or by id.
  *
- * The provider uses transactions for insert, update and deletes to provide optimal performance
+ * <p>The provider uses transactions for insert, update and deletes to provide optimal performance
  * and the ability to cleanly implement rollbacks. It will use the proper type of transaction
  * depending on if write ahead logging is enabled on the database.
- *
- * URI for matching rows should be in form: content://{authority}/{table}
- * URI for matching row by id should be in form: content://{authority}/{table}/{id}
- *
- * By default the getType() method will return the following for a directory:
- * vnd.android.cursor.dir/{authority}/table
- * and the following for an individual row:
- * vnd.android.cursor.item/{authority}/table
- *
- * The following query parameters are supported on the URI:
- * distinct=true  - informs the query to ensure each row returned is unique.
- * limit={n} - return only the first "n" rows of data
- *
- * Note: if any errors occur in bulkInsert, update, or delete the provider will return 0
+ * <ul>
+ * <li>URI for matching rows should be in form: content://{authority}/{table}
+ * <li>URI for matching row by id should be in form: content://{authority}/{table}/{id}
+ * </ul>
+ * <p>By default the getType() method will return the following:
+ * <ul>
+ * <li>directory:   vnd.android.cursor.dir/{authority}/table
+ * <li>single row:  vnd.android.cursor.item/{authority}/table
+ * </ul>
+ * <p>The following query parameters are supported on the URI:
+ * <ul>
+ * <li>distinct=true  - informs the query to ensure each row returned is unique.
+ * <li>limit={n} - return only the first "n" rows of data
+ * </ul>
+ * <p>Note: if any errors occur in bulkInsert, update, or delete the provider will return 0
  * to indicate an error occurred. Depending on the conflict method the following will
  * happen:
- *
- * CONFLICT_ROLLBACK - 0 or n rows.  Essentially an all or nothing operation.
- * CONFLICT_IGNORE - 0 to n rows. 0 is 100% failure, n is 100% success, n/2 = 50% success, etc
- * CONFLICT_REPLACE - n rows, should always be 100% successful
- *
- * If logging is enabled, more data on the errors will be recorded.
+ * <ul>
+ * <li>CONFLICT_ROLLBACK - 0 or n rows.  Essentially an all or nothing operation.
+ * <li>CONFLICT_IGNORE - 0 to n rows. 0 is 100% failure, n is 100% success, n/2 = 50% success, etc
+ * <li>CONFLICT_REPLACE - n rows, should always be 100% successful
+ * </ul>
+ * <p>If logging is enabled, more data on the errors will be recorded.
  */
 public abstract class BasicCRUDProvider extends ContentProvider {
 
     private static final String TAG = "BasicCRUDProvider";
 
+    /**
+     * Parameter constant used to request a distinct query. The parameter value must be "true" to ensure the
+     * distinct request is honored.
+     */
     public static final String DISTINCT_PARAMETER = "distinct";
+
+    /**
+     * Parameter constant used to request a query limit. The parameter value must be an integer &gt; 0
+     */
     public static final String LIMIT_PARAMETER = "limit";
+
+    /**
+     * All inserts (bulk or single), or updates will be rolled back on any
+     * data conflict or unexpected error that occurs with the sql command.
+     *
+     * <p>Essentially behaves like CONFLICT_ROLLBACK, but uses CONFLICT_NONE (aka CONFLICT_ABORT) to
+     * detect errors, but this implementation of the provider will always rollback the transaction.
+     *
+     * @see SQLiteDatabase#CONFLICT_ROLLBACK
+     * @see SQLiteDatabase#CONFLICT_NONE
+     * @see SQLiteDatabase#CONFLICT_ABORT
+     */
+    protected static final int CONFLICT_ROLLBACK = SQLiteDatabase.CONFLICT_NONE;
+
+    /**
+     * All inserts (bulk or single), or updates that result in a data conflict
+     * will be ignored leaving the original values in place, but the command will be successful.
+     *
+     * @see SQLiteDatabase#CONFLICT_IGNORE
+     */
+    protected static final int CONFLICT_IGNORE = SQLiteDatabase.CONFLICT_IGNORE;
+
+    /**
+     * All inserts (bulk or single) that result in a data conflict
+     * will be removed, and the new row will be inserted in its place.
+     *
+     * <p>For updates that result in conflict, the data resulting in the conflict will be removed
+     * prior to the update for the row completing. This may result in data loss where after the
+     * update, there are fewer rows than when the update started.
+     *
+     * @see SQLiteDatabase#CONFLICT_REPLACE
+     */
+    protected static final int CONFLICT_REPLACE = SQLiteDatabase.CONFLICT_REPLACE;
+
 
     private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     private static final int ALL_ROWS = 1;
@@ -94,36 +137,6 @@ public abstract class BasicCRUDProvider extends ContentProvider {
     private SQLiteOpenHelper dbHelper;
     private final String authority;
 
-    /**
-     * CONFLICT_ROLLBACK - all inserts (bulk or single), or updates will be rolled back on any
-     * data conflict or unexpected error that occurs with the sql command.
-     *
-     * Essentially behaves like CONFLICT_ROLLBACK, but uses CONFLICT_NONE (aka CONFLICT_ABORT) to
-     * detect errors, but this implementation of the provider will always rollback the transaction.
-     *
-     * @see SQLiteDatabase#CONFLICT_ROLLBACK
-     * @see SQLiteDatabase#CONFLICT_ABORT
-     */
-    protected static final int CONFLICT_ROLLBACK = SQLiteDatabase.CONFLICT_NONE;
-
-    /**
-     * CONFLICT_IGNORE - all inserts (bulk or single), or updates that result in a data conflict
-     * will be ignored leaving the original values in place, but the command will be successful.
-     *
-     * @see SQLiteDatabase#CONFLICT_IGNORE
-     */
-    protected static final int CONFLICT_IGNORE = SQLiteDatabase.CONFLICT_IGNORE;
-
-    /**
-     * CONFLICT_REPLACE - all inserts (bulk or single), that result in a data conflict
-     * will be removed, and the new row will be inserted in its place.
-     *
-     * For updates that result in conflict, the data resulting in the conflict will be removed
-     * prior to the update for the row completing.
-     *
-     * @see SQLiteDatabase#CONFLICT_REPLACE
-     */
-    protected static final int CONFLICT_REPLACE = SQLiteDatabase.CONFLICT_REPLACE;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({CONFLICT_ROLLBACK, CONFLICT_IGNORE, CONFLICT_REPLACE})
@@ -150,6 +163,12 @@ public abstract class BasicCRUDProvider extends ContentProvider {
         LOGGING_ENABLED = enabled;
     }
 
+    /**
+     * Initialize the content provider. This implementation retrieves the database
+     * helper.
+     *
+     * @see BasicCRUDProvider#getDbHelper()
+     */
     @Override
     public boolean onCreate() {
         dbHelper = getDbHelper();
@@ -157,16 +176,19 @@ public abstract class BasicCRUDProvider extends ContentProvider {
     }
 
     /**
-     * Implemented to support unit testing, not needed for standard content providers
+     * Implemented to support unit testing, not needed for standard content providers.
+     * This implementation closes and releases the reference to the database helper
+     *
+     * @see BasicCRUDProvider#getDbHelper()
      */
     @Override
-    public final void shutdown() {
+    public void shutdown() {
         dbHelper.close();
         dbHelper = null;
     }
 
     /**
-     * Override to provide the database helper associated with this provider
+     * Implement to provide the database helper associated with this provider
      *
      * @return The SQLiteOpen helper used to access the database
      */
@@ -189,12 +211,11 @@ public abstract class BasicCRUDProvider extends ContentProvider {
     /**
      * Override to provide a insert conflict algorithm for the specified table.
      *
-     * By default it will use CONFLICT_ROLLBACK which will roll back the insert
+     * <p>By default it will use CONFLICT_ROLLBACK which will roll back the insert
      * operation if a conflict occurs leaving the database unchanged.
      *
      * @param table The table to determine the conflict algorithm for.
-     * @return SQLiteDatabase conflict algorithm
-     * @see SQLiteDatabase
+     * @return the ConflictAlgorithm to use for insertion
      */
     @SuppressWarnings("UnusedParameters")
     @ConflictAlgorithm
@@ -205,12 +226,11 @@ public abstract class BasicCRUDProvider extends ContentProvider {
     /**
      * Override to provide an update conflict algorithm for the specified table.
      *
-     * By default it will use CONFLICT_ROLLBACK which will roll back the update
+     * <p>By default it will use CONFLICT_ROLLBACK which will roll back the update
      * operation if a conflict occurs leaving the database unchanged.
      *
      * @param table The table to determine the conflict algorithm for.
-     * @return SQLiteDatabase conflict algorithm
-     * @see SQLiteDatabase
+     * @return the ConflictAlgorithm to use for updates
      */
     @SuppressWarnings("UnusedParameters")
     @ConflictAlgorithm
@@ -218,6 +238,19 @@ public abstract class BasicCRUDProvider extends ContentProvider {
         return CONFLICT_ROLLBACK;
     }
 
+    /**
+     * Basic implementation of getType.
+     *
+     * <p>By default this method will return the following mime types:
+     * <ul>
+     * <li>directory:   vnd.android.cursor.dir/{authority}/{tableName}
+     * <li>single row:  vnd.android.cursor.item/{authority}/{tableName}
+     * </ul>
+     *
+     * @param uri the URI to query.
+     * @return a MIME type string, or {@code null} if there is no type.
+     * @throws UnsupportedOperationException if the URI does not match the expected format
+     */
     @Override
     @Nullable
     public String getType(@NonNull Uri uri) {
@@ -235,6 +268,17 @@ public abstract class BasicCRUDProvider extends ContentProvider {
         }
     }
 
+    /**
+     * Implements a basic insert operation. If the uri references a single record, the insertion
+     * will fail.
+     *
+     * @param uri    The content:// URI of the insertion request. This must not be {@code null}.
+     * @param values A set of column_name/value pairs to add to the database.
+     *               This must not be {@code null}.
+     * @return The URI for the newly inserted item or null on error
+     * @throws UnsupportedOperationException If the URI refers to a single item, or is not in
+     *                                       the expected format
+     */
     @Override
     @Nullable
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
@@ -289,6 +333,17 @@ public abstract class BasicCRUDProvider extends ContentProvider {
         return ContentUris.withAppendedId(uri, id);
     }
 
+    /**
+     * Implements a bulk insertion operation under a single transaction for all rows.
+     * If the uri references a single record, the insertion will fail.
+     *
+     * @param uri         The content:// URI of the insertion request.
+     * @param valuesArray An array of sets of column_name/value pairs to add to the database.
+     *                    This must not be {@code null}.
+     * @return The number of values that were inserted.
+     * @throws UnsupportedOperationException If the URI refers to a single item, or is not in
+     *                                       the expected format
+     */
     @Override
     public int bulkInsert(@NonNull Uri uri, @NonNull ContentValues[] valuesArray) {
         int match = uriMatcher.match(uri);
@@ -354,6 +409,31 @@ public abstract class BasicCRUDProvider extends ContentProvider {
         return count;
     }
 
+    /**
+     * Basic implementation of a query
+     *
+     * <p>The uri may have any of the following parameters
+     * <ul>
+     * <li>{@link BasicCRUDProvider#LIMIT_PARAMETER} in form of limit={n} where n is number &gt; 0
+     * <li>{@link BasicCRUDProvider#DISTINCT_PARAMETER} in form of distinct=true
+     * </ul>
+     *
+     * @param uri           The URI to query. This will be the full URI sent by the client;
+     *                      if the client is requesting a specific record, the URI will end in a record number
+     *                      that the implementation should parse and add to a WHERE or HAVING clause, specifying
+     *                      that _id value.
+     * @param projection    The list of columns to put into the cursor. If
+     *                      {@code null} all columns are included.
+     * @param selection     A selection criteria to apply when filtering rows.
+     *                      If {@code null} then all rows are included.
+     * @param selectionArgs You may include ?s in selection, which will be replaced by
+     *                      the values from selectionArgs, in order that they appear in the selection.
+     *                      The values will be bound as Strings.
+     * @param sortOrder     How the rows in the cursor should be sorted.
+     *                      If {@code null} then the provider is free to define the sort order.
+     * @return a Cursor or {@code null}.
+     * @throws UnsupportedOperationException If the URI is not in the expected format
+     */
     @Override
     @Nullable
     public Cursor query(@NonNull Uri uri,
@@ -415,6 +495,22 @@ public abstract class BasicCRUDProvider extends ContentProvider {
         }
     }
 
+    /**
+     * Basic implementation of the update operation for a content provider. This implementation will also
+     * notify any listeners of any content changes.
+     *
+     * @param uri           The URI to query. This can potentially have a record ID if this
+     *                      is an update request for a specific record.
+     * @param values        A set of column_name/value pairs to update in the database.
+     *                      This must not be {@code null}.
+     * @param selection     An optional filter to match rows to update. If the uri references
+     *                      a specific record, than this parameter will be ignored
+     * @param selectionArgs You may include ?s in selection, which will be replaced by
+     *                      the values from selectionArgs, in order that they appear in the selection.
+     *                      The values will be bound as Strings.
+     * @return the number of rows affected.
+     * @throws UnsupportedOperationException If the URI is not in the expected format
+     */
     @Override
     public int update(@NonNull Uri uri,
                       @Nullable ContentValues values,
@@ -474,6 +570,20 @@ public abstract class BasicCRUDProvider extends ContentProvider {
         return rows;
     }
 
+    /**
+     * Basic implementation of the delete operation for a content provider. If the uri references
+     * a specific record, than any selection provided will be ignored. This implementation will also
+     * notify any listeners of any content changes.
+     *
+     * @param uri           The full URI to query, including a row ID (if a specific record is requested).
+     * @param selection     An optional restriction to apply to rows when deleting.  If the uri references
+     *                      a specific record, than this parameter will be ignored
+     * @param selectionArgs You may include ?s in selection, which will be replaced by
+     *                      the values from selectionArgs, in order that they appear in the selection.
+     *                      The values will be bound as Strings.
+     * @return The number of rows affected.
+     * @throws UnsupportedOperationException If the URI is not in the expected format
+     */
     @Override
     public int delete(@NonNull Uri uri,
                       @Nullable String selection,
@@ -532,7 +642,8 @@ public abstract class BasicCRUDProvider extends ContentProvider {
      * The provider will close the database when the UI is hidden or in the background.
      * If there is an active connection, it will continue to process
      * due to explicit reference counting added via this provider implementation.
-     * The database will close when all references are released.
+     * The database will close when all references are released, and memory trim request is made.
+     * The database will be re-opened on the next database request.
      *
      * @param level the trim level requested by the OS
      * @see ComponentCallbacks2

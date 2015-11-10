@@ -96,6 +96,8 @@ public class CityActivity extends AppCompatActivity
      */
     public static class StatesCreatedResultReceiver extends BasicCrudResultReceiver {
 
+        // saving the reference to the city activity. A weak reference allows the garbage
+        // collector reclaim the memory if this is the last reference to the activity
         private final WeakReference<CityActivity> cityActivityRef;
 
         public StatesCreatedResultReceiver(CityActivity cityActivity) {
@@ -112,8 +114,9 @@ public class CityActivity extends AppCompatActivity
 
             CityActivity activity = cityActivityRef.get();
 
-            // Also check the "bindings", just in case the activity is in process of being destroyed
-            // and the bindings have been released.
+            // Ensure the activity still exists. Also check the "bindings", just in case the activity
+            // is in process of being destroyed and the bindings have been released but activity has not
+            // been garbage collected.
             if (activity != null && activity.bindings != null) {
                 Snackbar.make(activity.bindings.coordinatorLayout, R.string.states_created, Snackbar.LENGTH_LONG).show();
             }

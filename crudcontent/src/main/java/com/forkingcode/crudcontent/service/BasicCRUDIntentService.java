@@ -53,10 +53,31 @@ public class BasicCRUDIntentService extends IntentService {
 
     public BasicCRUDIntentService() {
         super("BasicCRUDIntentService");
+
+        // In case service is killed, try the last operation again.
+        setIntentRedelivery(true);
     }
 
+    /**
+     * Handler for the service intent. It processes the intent data and performs
+     * the requested database operation. Since database writes are blocking, this
+     * also queues the operations in the order requested. Ie if calling code creates
+     * and object and then updates it, the intent service will execute the create
+     * intent prior to executing the update intent.
+     *
+     * This method is invoked on the worker thread with a request to process.
+     * Only one Intent is processed at a time, but the processing happens on a
+     * worker thread that runs independently from other application logic.
+     * So, if this code takes a long time, it will hold up other requests to
+     * the same IntentService, but it will not hold up anything else.
+     * When all requests have been handled, the IntentService stops itself,
+     * so you should not call {@link #stopSelf}.
+     *
+     * @param intent The value passed to {@link
+     *               android.content.Context#startService(Intent)}.
+     */
     @Override
-    protected void onHandleIntent(Intent intent) {
+    protected final void onHandleIntent(Intent intent) {
         if (intent == null) {
             return;
         }
@@ -201,7 +222,10 @@ public class BasicCRUDIntentService extends IntentService {
 
         /**
          * Performs the operation where matches a specific row of data by id. Must not use
-         * with whereSelection
+         * with whereSelection.
+         *
+         * <p>If the Uri used to start the builder already contains the item id, calling this
+         * will cause the id to be appended twice.
          *
          * @param id The id associated with the row in the database
          * @return this intent builder
@@ -217,6 +241,9 @@ public class BasicCRUDIntentService extends IntentService {
         /**
          * Performs the operation where matches a specific selection with optional arguments. Must
          * not use with whereMatchesId
+         *
+         * <p>If the Uri used to start the builder already contains the item id, calling this
+         * method will have no effect on the operation as the selection will be ignored.
          *
          * @param selection     The selection clause for the update or delete
          * @param selectionArgs Optional arguments to bind to the selection. Note, best practice
@@ -299,8 +326,6 @@ public class BasicCRUDIntentService extends IntentService {
          * @see BasicCRUDIntentService
          */
         public Intent build() {
-            String action = intent.getAction();
-
             if (contentValuesList != null && !contentValuesList.isEmpty()) {
                 intent.putExtra(EXTRA_VALUES, contentValuesList);
             }
