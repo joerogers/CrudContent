@@ -102,8 +102,8 @@ public class EditCityActivity extends AppCompatActivity
                 return true;
 
             case R.id.action_delete:
-                startService(new BasicCRUDIntentService.IntentBuilder(this)
-                        .forDelete(CityContract.URI)
+                startService(BasicCRUDIntentService.IntentBuilder
+                        .buildForDelete(this, CityContract.URI)
                         .whereMatchesId(cityId)
                         .build());
 
@@ -119,14 +119,14 @@ public class EditCityActivity extends AppCompatActivity
         Intent intent;
 
         if (cityId == CityContract.NO_CITY_ID) {
-            intent = new BasicCRUDIntentService.IntentBuilder(this)
-                    .forInsert(CityContract.URI)
+            intent = BasicCRUDIntentService.IntentBuilder
+                    .buildForInsert(this, CityContract.URI)
                     .usingValues(cityValues)
                     .build();
         }
         else {
-            intent = new BasicCRUDIntentService.IntentBuilder(this)
-                    .forUpdate(CityContract.URI)
+            intent = BasicCRUDIntentService.IntentBuilder
+                    .buildForUpdate(this, CityContract.URI)
                     .whereMatchesId(cityId)
                     .usingValues(cityValues)
                     .build();

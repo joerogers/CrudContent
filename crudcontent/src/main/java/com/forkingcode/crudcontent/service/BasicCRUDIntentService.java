@@ -127,15 +127,17 @@ public class BasicCRUDIntentService extends IntentService {
      */
     public static class IntentBuilder {
         private final Intent intent;
-        private ArrayList<ContentValues> valuesList;
+        private ArrayList<ContentValues> contentValuesList;
         private long id = -1;
+        private boolean isBulkOperation = false;
+        private boolean isDeleteOperation = false;
 
         /**
          * Create a new intent builder
          *
          * @param context Context used to build the Intent
          */
-        public IntentBuilder(@NonNull Context context) {
+        private IntentBuilder(@NonNull Context context) {
             intent = new Intent(context, BasicCRUDIntentService.class);
         }
 
@@ -143,48 +145,58 @@ public class BasicCRUDIntentService extends IntentService {
          * Indicate want to perform an insert operation with the service. Only one "for"
          * operation may be provided per Intent
          *
-         * @param uri The URI for the provider/table you wish to insert into
+         * @param context The context used to build the intent
+         * @param uri     The URI for the provider/table you wish to insert into
          * @return this intent builder
          */
-        public IntentBuilder forInsert(@NonNull Uri uri) {
-            setActionAndUri(ACTION_INSERT, uri);
-            return this;
+        public static IntentBuilder buildForInsert(@NonNull Context context, @NonNull Uri uri) {
+            IntentBuilder intentBuilder = new IntentBuilder(context);
+            intentBuilder.setActionAndUri(ACTION_INSERT, uri);
+            return intentBuilder;
         }
 
         /**
          * Indicate want to perform a bulk insert operation with the service. Only one "for"
          * operation may be provided per Intent
          *
-         * @param uri The URI for the provider/table you wish to insert into
+         * @param context The context used to build the intent
+         * @param uri The URI for the provider/table you wish to insert data
          * @return this intent builder
          */
-        public IntentBuilder forBulkInsert(@NonNull Uri uri) {
-            setActionAndUri(ACTION_BULK_INSERT, uri);
-            return this;
+        public static IntentBuilder buildForBulkInsert(@NonNull Context context, @NonNull Uri uri) {
+            IntentBuilder intentBuilder = new IntentBuilder(context);
+            intentBuilder.setActionAndUri(ACTION_BULK_INSERT, uri);
+            intentBuilder.isBulkOperation = true;
+            return intentBuilder;
         }
 
         /**
          * Indicate want to perform an update operation with the service. Only one "for"
          * operation may be provided per Intent
          *
+         * @param context The context used to build the intent
          * @param uri The URI for the provider/table you wish to update
          * @return this intent builder
          */
-        public IntentBuilder forUpdate(@NonNull Uri uri) {
-            setActionAndUri(ACTION_UPDATE, uri);
-            return this;
+        public static IntentBuilder buildForUpdate(@NonNull Context context, @NonNull Uri uri) {
+            IntentBuilder intentBuilder = new IntentBuilder(context);
+            intentBuilder.setActionAndUri(ACTION_UPDATE, uri);
+            return intentBuilder;
         }
 
         /**
          * Indicate want to perform a delete operation with the service. Only one "for"
          * operation may be provided per Intent
          *
+         * @param context The context used to build the intent
          * @param uri The URI for the provider/table you wish to delete from
          * @return this intent builder
          */
-        public IntentBuilder forDelete(@NonNull Uri uri) {
-            setActionAndUri(ACTION_DELETE, uri);
-            return this;
+        public static IntentBuilder buildForDelete(@NonNull Context context, @NonNull Uri uri) {
+            IntentBuilder intentBuilder = new IntentBuilder(context);
+            intentBuilder.setActionAndUri(ACTION_DELETE, uri);
+            intentBuilder.isDeleteOperation = true;
+            return intentBuilder;
         }
 
         /**
@@ -225,11 +237,13 @@ public class BasicCRUDIntentService extends IntentService {
          *
          * @param values The content values indicating the columns/value pairs for the operation
          * @return this intent builder
+         * @throws IllegalStateException if providing values for a delete operation, or providing multiple row
+         * for a plain insert/update operation
          */
         public IntentBuilder usingValues(@NonNull ContentValues values) {
-            valuesList = new ArrayList<>(1);
+            ArrayList<ContentValues> valuesList = new ArrayList<>(1);
             valuesList.add(values);
-            return this;
+            return usingValues(valuesList);
         }
 
         /**
@@ -237,11 +251,13 @@ public class BasicCRUDIntentService extends IntentService {
          *
          * @param values The content values array indicating the columns/value pairs for the operation
          * @return this intent builder
+         * @throws IllegalStateException if providing values for a delete operation, or providing multiple row
+         * for a plain insert/update operation
          */
         public IntentBuilder usingValues(@NonNull ContentValues[] values) {
-            valuesList = new ArrayList<>(values.length);
+            ArrayList<ContentValues> valuesList = new ArrayList<>(values.length);
             Collections.addAll(valuesList, values);
-            return this;
+            return usingValues(valuesList);
         }
 
         /**
@@ -249,9 +265,17 @@ public class BasicCRUDIntentService extends IntentService {
          *
          * @param values The content values array indicating the columns/value pairs for the operation
          * @return this intent builder
+         * @throws IllegalStateException if providing values for a delete operation, or providing multiple row
+         * for a plain insert/update operation
          */
         public IntentBuilder usingValues(@NonNull ArrayList<ContentValues> values) {
-            valuesList = new ArrayList<>(values);
+            if (isDeleteOperation) {
+                throw new IllegalStateException("Providing content values for delete operation");
+            }
+            if (values.size() > 1 && !isBulkOperation) {
+                throw new IllegalStateException("Multiple rows of data provided to insert/update operation");
+            }
+            contentValuesList = new ArrayList<>(values);
             return this;
         }
 
@@ -277,21 +301,10 @@ public class BasicCRUDIntentService extends IntentService {
         public Intent build() {
             String action = intent.getAction();
 
-            if (action == null) {
-                throw new IllegalStateException("Must call one of forInsert(), forBulkInsert(), forUpdate(), or forDelete()");
+            if (contentValuesList != null && !contentValuesList.isEmpty()) {
+                intent.putExtra(EXTRA_VALUES, contentValuesList);
             }
-
-            if (valuesList != null && !valuesList.isEmpty()) {
-                intent.putExtra(EXTRA_VALUES, valuesList);
-
-                if (valuesList.size() > 1 && !ACTION_BULK_INSERT.equals(action)) {
-                    throw new IllegalStateException("Multiple rows of data provided to insert/update operation");
-                }
-                else if (ACTION_DELETE.equals(action)) {
-                    throw new IllegalStateException("Providing content values for delete operation");
-                }
-            }
-            else if (!ACTION_DELETE.equals(action)) {
+            else if (!isDeleteOperation) {
                 throw new IllegalStateException("Must provide ContentValues for insert, bulk insert or update");
             }
 

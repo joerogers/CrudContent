@@ -91,8 +91,8 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
     public void test01Insert() throws Exception {
 
         // Should return a valid uri in form of: uri/{id}. Mock provider always set id to 1.
-        Intent serviceIntent = new BasicCRUDIntentService.IntentBuilder(getContext())
-                .forInsert(uri)
+        Intent serviceIntent = BasicCRUDIntentService.IntentBuilder
+                .buildForInsert(getContext(), uri)
                 .usingValues(new ContentValues())
 
                         // Receiver is called by intent service to indicate status of the insert
@@ -134,8 +134,8 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
         valuesArray[1] = new ContentValues();
 
         // Returns number of content values.
-        Intent serviceIntent = new BasicCRUDIntentService.IntentBuilder(getContext())
-                .forBulkInsert(uri)
+        Intent serviceIntent = BasicCRUDIntentService.IntentBuilder
+                .buildForBulkInsert(getContext(), uri)
                 .usingValues(valuesArray)
                 .setResultReceiver(new BasicCrudResultReceiver(null) {
                     @Override
@@ -169,8 +169,8 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
 
         long id = 2;
 
-        Intent serviceIntent = new BasicCRUDIntentService.IntentBuilder(getContext())
-                .forUpdate(uri)
+        Intent serviceIntent = BasicCRUDIntentService.IntentBuilder
+                .buildForUpdate(getContext(), uri)
                 .whereMatchesId(id)
                 .usingValues(new ContentValues())
                 .setResultReceiver(new BasicCrudResultReceiver(null) {
@@ -206,8 +206,8 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
         final String selection = "column1 = ? and column2 = ?";
         final String[] selectionArgs = new String[]{"arg1", "arg2"};
 
-        Intent serviceIntent = new BasicCRUDIntentService.IntentBuilder(getContext())
-                .forUpdate(uri)
+        Intent serviceIntent = BasicCRUDIntentService.IntentBuilder
+                .buildForUpdate(getContext(), uri)
                 .whereSelection(selection, selectionArgs)
                 .usingValues(new ContentValues())
                 .setResultReceiver(new BasicCrudResultReceiver(null) {
@@ -242,8 +242,8 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
 
         final long id = 4;
 
-        Intent serviceIntent = new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
-                .forDelete(uri)
+        Intent serviceIntent = BasicCRUDIntentService.IntentBuilder
+                .buildForDelete(getContext(), uri)
                 .whereMatchesId(id)
                 .setResultReceiver(new BasicCrudResultReceiver(null) {
                     @Override
@@ -278,8 +278,8 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
         final String selection = "column1 = ? and column2 = ?";
         final String[] selectionArgs = new String[]{"arg1", "arg2"};
 
-        Intent serviceIntent = new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
-                .forDelete(uri)
+        Intent serviceIntent = BasicCRUDIntentService.IntentBuilder
+                .buildForDelete(getContext(), uri)
                 .whereSelection(selection, selectionArgs)
                 .setResultReceiver(new BasicCrudResultReceiver(null) {
                     @Override
@@ -309,70 +309,61 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
     }
 
     @Test
-    public void test07MissingAction() throws Exception {
+    public void test07NoContentValuesForInsert() throws Exception {
         thrown.expect(IllegalStateException.class);
 
-        new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
-                .whereMatchesId(5)
+        BasicCRUDIntentService.IntentBuilder
+                .buildForInsert(getContext(), uri)
                 .build();
     }
 
     @Test
-    public void test08NoContentValuesForInsert() throws Exception {
+    public void test08BothIdAndSelectionProvided() {
         thrown.expect(IllegalStateException.class);
 
-        new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
-                .forInsert(uri)
-                .build();
-    }
-
-    @Test
-    public void test09BothIdAndSelectionProvided() {
-        thrown.expect(IllegalStateException.class);
-
-        new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
-                .forUpdate(uri)
+        BasicCRUDIntentService.IntentBuilder
+                .buildForUpdate(getContext(), uri)
                 .whereMatchesId(1)
                 .whereSelection("test", null)
                 .build();
     }
 
     @Test
-    public void test10EmptyValuesArray() throws Exception {
+    public void test09EmptyValuesArray() throws Exception {
         thrown.expect(IllegalStateException.class);
 
-        new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
-                .forInsert(uri)
+        BasicCRUDIntentService.IntentBuilder
+                .buildForInsert(getContext(), uri)
                 .usingValues(new ContentValues[0])
                 .build();
     }
 
     @Test
-    public void test11EmptyValuesArrayList() throws Exception {
+    public void test10EmptyValuesArrayList() throws Exception {
         thrown.expect(IllegalStateException.class);
 
-        new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
-                .forInsert(uri)
+        BasicCRUDIntentService.IntentBuilder
+                .buildForInsert(getContext(), uri)
                 .usingValues(new ArrayList<ContentValues>(0))
                 .build();
     }
 
     @Test
-    public void test12UsingMultipleRowsWithoutBulkInsert() throws Exception {
+    public void test11UsingMultipleRowsWithoutBulkInsert() throws Exception {
         thrown.expect(IllegalStateException.class);
 
-        new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
-                .forInsert(uri)
+        BasicCRUDIntentService.IntentBuilder
+                .buildForInsert(getContext(), uri)
                 .usingValues(new ArrayList<ContentValues>(2))
                 .build();
     }
 
     @Test
-    public void test13UsingContentValuesWithDelete() throws Exception {
+    public void test12UsingContentValuesWithDelete() throws Exception {
         thrown.expect(IllegalStateException.class);
 
-        new BasicCRUDIntentService.IntentBuilder(InstrumentationRegistry.getTargetContext())
-                .forDelete(uri)
+        BasicCRUDIntentService.IntentBuilder
+                .buildForDelete(getContext(), uri)
                 .usingValues(new ContentValues())
                 .build();
     }
