@@ -43,20 +43,21 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Basic CRUD (Create, Read, Update, Delete) provider for a single table. Assumes basic
- * matching of either all rows, or by id.
+ * Basic CRUD (Create, Read, Update, Delete) provider for. Assumes basic
+ * matching of either all rows, or by id for tables matching a specific uri pattern.
  *
  * <p>The provider uses transactions for insert, update and deletes to provide optimal performance
  * and the ability to cleanly implement rollbacks. It will use the proper type of transaction
  * depending on if write ahead logging is enabled on the database.
+ * <p>To use this provider your URI must match the following scheme:
  * <ul>
  * <li>URI for matching rows should be in form: content://{authority}/{table}
  * <li>URI for matching row by id should be in form: content://{authority}/{table}/{id}
  * </ul>
  * <p>By default the getType() method will return the following:
  * <ul>
- * <li>directory:   vnd.android.cursor.dir/{authority}/table
- * <li>single row:  vnd.android.cursor.item/{authority}/table
+ * <li>directory:   vnd.android.cursor.dir/{authority}/{table}
+ * <li>single row:  vnd.android.cursor.item/{authority}/{table}
  * </ul>
  * <p>The following query parameters are supported on the URI:
  * <ul>
@@ -71,7 +72,7 @@ import java.util.List;
  * <li>CONFLICT_IGNORE - 0 to n rows. 0 is 100% failure, n is 100% success, n/2 = 50% success, etc
  * <li>CONFLICT_REPLACE - n rows, should always be 100% successful
  * </ul>
- * <p>If logging is enabled, more data on the errors will be recorded.
+ * <p>If logging is enabled, more information on the errors will be recorded.
  */
 public abstract class BasicCRUDProvider extends ContentProvider {
 

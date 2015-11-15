@@ -232,7 +232,7 @@ public class BasicCRUDIntentService extends IntentService {
          */
         public IntentBuilder whereMatchesId(long id) {
             if (intent.hasExtra(EXTRA_SELECTION)) {
-                throw new IllegalStateException("Only call one of whereMatchesId and whereSelection");
+                throw new IllegalStateException("Only call one of whereMatchesId and whereMatchesSelection");
             }
             this.id = id;
             return this;
@@ -250,9 +250,9 @@ public class BasicCRUDIntentService extends IntentService {
          *                      is to use binding to avoid sql injection.
          * @return this intent builder
          */
-        public IntentBuilder whereSelection(String selection, String[] selectionArgs) {
+        public IntentBuilder whereMatchesSelection(String selection, String[] selectionArgs) {
             if (id != -1) {
-                throw new IllegalStateException("Only call one of whereMatchesId and whereSelection");
+                throw new IllegalStateException("Only call one of whereMatchesId and whereMatchesSelection");
             }
             intent.putExtra(EXTRA_SELECTION, selection);
             intent.putExtra(EXTRA_SELECTION_ARGS, selectionArgs);

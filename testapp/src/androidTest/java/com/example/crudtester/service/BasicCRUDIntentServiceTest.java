@@ -208,7 +208,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
 
         Intent serviceIntent = BasicCRUDIntentService.IntentBuilder
                 .buildForUpdate(getContext(), uri)
-                .whereSelection(selection, selectionArgs)
+                .whereMatchesSelection(selection, selectionArgs)
                 .usingValues(new ContentValues())
                 .setResultReceiver(new BasicCrudResultReceiver(null) {
                     @Override
@@ -280,7 +280,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
 
         Intent serviceIntent = BasicCRUDIntentService.IntentBuilder
                 .buildForDelete(getContext(), uri)
-                .whereSelection(selection, selectionArgs)
+                .whereMatchesSelection(selection, selectionArgs)
                 .setResultReceiver(new BasicCrudResultReceiver(null) {
                     @Override
                     protected void onDeleteComplete(int rows) {
@@ -324,7 +324,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
         BasicCRUDIntentService.IntentBuilder
                 .buildForUpdate(getContext(), uri)
                 .whereMatchesId(1)
-                .whereSelection("test", null)
+                .whereMatchesSelection("test", null)
                 .build();
     }
 
