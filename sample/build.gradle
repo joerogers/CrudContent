@@ -1,5 +1,4 @@
 apply plugin: 'com.android.application'
-apply plugin: 'com.android.databinding'
 
 android {
     compileSdkVersion 23
@@ -13,6 +12,11 @@ android {
         versionName "1.0"
         generatedDensities = ['mdpi', 'hdpi', 'xhdpi', 'xxhdpi']
     }
+
+    dataBinding {
+        enabled = true
+    }
+
     buildTypes {
         release {
             minifyEnabled false
