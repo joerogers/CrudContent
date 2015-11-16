@@ -29,7 +29,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 
 import com.example.crudcontent.adapter.CityAdapter;
-import com.example.crudcontent.databinding.CityListFragmentBindings;
+import com.example.crudcontent.databinding.CityListFragmentBinding;
 import com.example.crudcontent.loader.CityLoaderCallbacks;
 
 /**
@@ -70,12 +70,12 @@ public class CityListFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        CityListFragmentBindings bindings = CityListFragmentBindings.inflate(inflater, container, false);
-        bindings.setListeners(this);
-        bindings.list.setEmptyView(bindings.empty);
-        bindings.list.setAdapter(new CityAdapter(bindings.list.getContext()));
-        showProgress(bindings, false);
-        return bindings.getRoot();
+        CityListFragmentBinding binding = CityListFragmentBinding.inflate(inflater, container, false);
+        binding.setListeners(this);
+        binding.list.setEmptyView(binding.empty);
+        binding.list.setAdapter(new CityAdapter(binding.list.getContext()));
+        showProgress(binding, false);
+        return binding.getRoot();
     }
 
     @Override
@@ -100,39 +100,39 @@ public class CityListFragment extends Fragment
     @Override
     public void onCityLoadComplete(final Cursor cursor) {
 
-        CityListFragmentBindings bindings = DataBindingUtil.getBinding(getView());
-        if (bindings == null) return;
+        CityListFragmentBinding binding = DataBindingUtil.getBinding(getView());
+        if (binding == null) return;
 
-        CityAdapter adapter = (CityAdapter) bindings.list.getAdapter();
+        CityAdapter adapter = (CityAdapter) binding.list.getAdapter();
         adapter.swapCursor(cursor);
 
         // Show list now either with contents or via the empty view.
-        showList(bindings, true);
+        showList(binding, true);
     }
 
-    private void showList(CityListFragmentBindings bindings, boolean showAnimation) {
+    private void showList(CityListFragmentBinding binding, boolean showAnimation) {
         // cross fade only if list is not already showing
-        if (bindings.listContainer.getVisibility() != View.VISIBLE) {
+        if (binding.listContainer.getVisibility() != View.VISIBLE) {
             if (showAnimation) {
-                crossFadeViews(bindings.listContainer, bindings.progress);
+                crossFadeViews(binding.listContainer, binding.progress);
             }
             else {
-                bindings.progress.setVisibility(View.GONE);
-                bindings.listContainer.setVisibility(View.VISIBLE);
+                binding.progress.setVisibility(View.GONE);
+                binding.listContainer.setVisibility(View.VISIBLE);
             }
         }
     }
 
-    private void showProgress(CityListFragmentBindings bindings, boolean showAnimation) {
+    private void showProgress(CityListFragmentBinding binding, boolean showAnimation) {
         // cross fade only if list is currently showing
-        if (bindings.progress.getVisibility() != View.VISIBLE) {
+        if (binding.progress.getVisibility() != View.VISIBLE) {
 
             if (showAnimation) {
-                crossFadeViews(bindings.progress, bindings.listContainer);
+                crossFadeViews(binding.progress, binding.listContainer);
             }
             else {
-                bindings.progress.setVisibility(View.VISIBLE);
-                bindings.listContainer.setVisibility(View.GONE);
+                binding.progress.setVisibility(View.VISIBLE);
+                binding.listContainer.setVisibility(View.GONE);
             }
         }
     }

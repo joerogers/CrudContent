@@ -28,7 +28,7 @@ import android.view.View;
 
 import com.example.crudcontent.BuildConfig;
 import com.example.crudcontent.R;
-import com.example.crudcontent.databinding.CityActivityBindings;
+import com.example.crudcontent.databinding.CityActivityBinding;
 import com.example.crudcontent.fragment.CityListFragment;
 import com.example.crudcontent.provider.StateContract;
 import com.forkingcode.crudcontent.service.BasicCRUDIntentService;
@@ -40,7 +40,7 @@ public class CityActivity extends AppCompatActivity
         implements CityListFragment.CityListFragmentListener {
 
     private static boolean createdStates = false;
-    private CityActivityBindings bindings;
+    private CityActivityBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,10 +50,10 @@ public class CityActivity extends AppCompatActivity
             StrictMode.enableDefaults();
         }
 
-        bindings = DataBindingUtil.setContentView(this, R.layout.activity_city);
-        setSupportActionBar(bindings.toolBar);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_city);
+        setSupportActionBar(binding.toolBar);
 
-        bindings.setListeners(this);
+        binding.setListeners(this);
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -75,7 +75,7 @@ public class CityActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        bindings = null;
+        binding = null;
     }
 
     @SuppressWarnings("unused")   // Called via data binding
@@ -117,8 +117,8 @@ public class CityActivity extends AppCompatActivity
             // Ensure the activity still exists. Also check the "bindings", just in case the activity
             // is in process of being destroyed and the bindings have been released but activity has not
             // been garbage collected.
-            if (activity != null && activity.bindings != null) {
-                Snackbar.make(activity.bindings.coordinatorLayout, R.string.states_created, Snackbar.LENGTH_LONG).show();
+            if (activity != null && activity.binding != null) {
+                Snackbar.make(activity.binding.coordinatorLayout, R.string.states_created, Snackbar.LENGTH_LONG).show();
             }
         }
     }

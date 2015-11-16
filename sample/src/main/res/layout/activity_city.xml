@@ -19,7 +19,7 @@
         xmlns:tools="http://schemas.android.com/tools">
 
     <!--suppress AndroidUnknownAttribute -->
-    <data class="CityActivityBindings">
+    <data class="CityActivityBinding">
 
         <variable
             name="listeners"

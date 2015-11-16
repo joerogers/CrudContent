@@ -3,7 +3,7 @@
         xmlns:tools="http://schemas.android.com/tools">
 
     <!--suppress AndroidUnknownAttribute -->
-    <data class="EditCityActivityBindings">
+    <data class="EditCityActivityBinding">
 
     </data>
 

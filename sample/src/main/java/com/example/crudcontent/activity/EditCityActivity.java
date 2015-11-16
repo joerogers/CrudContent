@@ -29,7 +29,7 @@ import android.view.MenuItem;
 
 import com.example.crudcontent.BuildConfig;
 import com.example.crudcontent.R;
-import com.example.crudcontent.databinding.EditCityActivityBindings;
+import com.example.crudcontent.databinding.EditCityActivityBinding;
 import com.example.crudcontent.fragment.EditCityFragment;
 import com.example.crudcontent.provider.CityContract;
 import com.forkingcode.crudcontent.service.BasicCRUDIntentService;
@@ -60,8 +60,8 @@ public class EditCityActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EditCityActivityBindings bindings = DataBindingUtil.setContentView(this, R.layout.activity_edit_city);
-        setSupportActionBar(bindings.toolBar);
+        EditCityActivityBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_edit_city);
+        setSupportActionBar(binding.toolBar);
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
