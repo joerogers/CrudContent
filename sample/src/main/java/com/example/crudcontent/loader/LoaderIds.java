@@ -17,7 +17,7 @@
 package com.example.crudcontent.loader;
 
 
-/* package */ final class LoaderIds {
+/* package */ public final class LoaderIds {
     private LoaderIds() {
     }
 

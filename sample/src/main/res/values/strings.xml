@@ -16,4 +16,9 @@
     <string name="date_visited_hint">Date Visited</string>
     <string name="notes_hint">Notes</string>
     <string name="submit_button">Submit</string>
+
+    <string-array name="sort_types">
+        <item>By Date</item>
+        <item>By Name</item>
+    </string-array>
 </resources>

@@ -25,9 +25,11 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.AdapterView;
 
 import com.example.crudcontent.BuildConfig;
 import com.example.crudcontent.R;
+import com.example.crudcontent.adapter.ToolbarSpinnerAdapter;
 import com.example.crudcontent.databinding.CityActivityBinding;
 import com.example.crudcontent.fragment.CityListFragment;
 import com.example.crudcontent.provider.StateContract;
@@ -39,8 +41,11 @@ import java.lang.ref.WeakReference;
 public class CityActivity extends AppCompatActivity
         implements CityListFragment.CityListFragmentListener {
 
+    private static final String STATE_SORT_ORDER = "sortOrder";
+
     private static boolean createdStates = false;
     private CityActivityBinding binding;
+    private int sortOrder = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +58,7 @@ public class CityActivity extends AppCompatActivity
         binding = DataBindingUtil.setContentView(this, R.layout.activity_city);
         setSupportActionBar(binding.toolBar);
 
+        binding.spinner.setAdapter(new ToolbarSpinnerAdapter(binding.spinner.getContext()));
         binding.setListeners(this);
 
         ActionBar actionBar = getSupportActionBar();
@@ -70,6 +76,18 @@ public class CityActivity extends AppCompatActivity
             // Ensure state data exists
             startService(intent);
         }
+
+        if (savedInstanceState != null) {
+            sortOrder = savedInstanceState.getInt(STATE_SORT_ORDER, 0);
+        }
+
+        updateSortOrder(sortOrder);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(STATE_SORT_ORDER, sortOrder);
     }
 
     @Override
@@ -78,16 +96,28 @@ public class CityActivity extends AppCompatActivity
         binding = null;
     }
 
-    @SuppressWarnings("unused")   // Called via data binding
-    public void onAddCity(View view) {
-        startActivity(EditCityActivity.buildIntent(this));
-    }
-
     @Override
     public void editCity(long cityId) {
         startActivity(EditCityActivity.buildIntent(this, cityId));
     }
 
+    @SuppressWarnings("unused")   // Called via data binding
+    public void onAddCity(View view) {
+        startActivity(EditCityActivity.buildIntent(this));
+    }
+
+    @SuppressWarnings("unused")   // Called via data binding
+    public void onSortOrderSelected(AdapterView<?> parent, View view, int position, long id) {
+        sortOrder = position;
+        updateSortOrder(position);
+    }
+
+    public void updateSortOrder(int sortOrder) {
+        CityListFragment fragment = (CityListFragment) getSupportFragmentManager().findFragmentById(R.id.city_fragment);
+        if (fragment != null) {
+            fragment.setSortOrder(sortOrder);
+        }
+    }
 
     /**
      * Result receiver to handle result of the bulk operation and display a SnackBar. Using

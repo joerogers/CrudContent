@@ -37,9 +37,10 @@ import android.widget.AdapterView;
 import com.example.crudcontent.R;
 import com.example.crudcontent.adapter.StateAdapter;
 import com.example.crudcontent.databinding.EditCityFragmentBinding;
-import com.example.crudcontent.loader.CityLoaderCallbacks;
+import com.example.crudcontent.loader.LoaderIds;
 import com.example.crudcontent.loader.StateLoaderCallbacks;
 import com.example.crudcontent.provider.CityContract;
+import com.forkingcode.crudcontent.loader.BasicCRUDLoader;
 
 import java.util.Date;
 
@@ -48,7 +49,7 @@ import java.util.Date;
  */
 public class EditCityFragment extends Fragment
         implements Handler.Callback,
-        CityLoaderCallbacks.CityLoadListener,
+        BasicCRUDLoader.BasicCRUDLoaderCallback,
         StateLoaderCallbacks.StateLoadListener,
         DatePickerDialogFragment.DatePickerDialogFragmentListener {
 
@@ -148,7 +149,12 @@ public class EditCityFragment extends Fragment
         // Only initialize loader, if editing a city and the saved instance state is null
         // otherwise, the user may have edited data that is now tracked in the save state
         if (cityId != CityContract.NO_CITY_ID && savedInstanceState == null) {
-            CityLoaderCallbacks.initLoader(getActivity(), getLoaderManager(), this, CITY_PROJECTION, cityId);
+            new BasicCRUDLoader.Builder(getContext(), this)
+                    .forUri(CityContract.URI)
+                    .queryProjection(CITY_PROJECTION)
+                    .whereMatchesId(cityId)
+                    .initLoader(getLoaderManager(), LoaderIds.CITY_LOADER);
+            //CityLoaderCallbacks.initLoader(getActivity(), getLoaderManager(), this, CITY_PROJECTION, cityId);
         }
     }
 
@@ -220,7 +226,20 @@ public class EditCityFragment extends Fragment
     }
 
     @Override
-    public void onCityLoadComplete(Cursor cursor) {
+    public void onCursorLoaded(int loaderId, @Nullable Cursor cursor) {
+        switch (loaderId) {
+            case LoaderIds.CITY_LOADER:
+                onCityLoadComplete(cursor);
+                break;
+            case LoaderIds.STATE_LOADER:
+                onStateLoadComplete(cursor);
+                break;
+            default:
+                throw new IllegalStateException("Unexpected loader id: " + loaderId);
+        }
+    }
+
+    private void onCityLoadComplete(Cursor cursor) {
         // If cursor is null, loader must be resetting
         // since we are not holding onto the cursor, all is good
         if (cursor == null) return;

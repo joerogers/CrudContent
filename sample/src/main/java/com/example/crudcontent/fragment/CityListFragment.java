@@ -21,6 +21,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewCompat;
 import android.view.LayoutInflater;
@@ -30,16 +31,24 @@ import android.widget.AdapterView;
 
 import com.example.crudcontent.adapter.CityAdapter;
 import com.example.crudcontent.databinding.CityListFragmentBinding;
-import com.example.crudcontent.loader.CityLoaderCallbacks;
+import com.example.crudcontent.loader.LoaderIds;
+import com.example.crudcontent.provider.CityContract;
+import com.forkingcode.crudcontent.loader.BasicCRUDLoader;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class CityListFragment extends Fragment
-        implements CityLoaderCallbacks.CityLoadListener {
+        implements BasicCRUDLoader.BasicCRUDLoaderCallback {
+
+    private static final int SORT_BY_DATE = 0;
+    private static final int SORT_BY_NAME = 1;
 
     private CityListFragmentListener listener;
     private int animationDuration;
+    private String orderByClause;
+    private int sortOrder = -1;
+    private boolean loaderStarted = false;
 
     public interface CityListFragmentListener {
 
@@ -83,7 +92,14 @@ public class CityListFragment extends Fragment
         super.onActivityCreated(savedInstanceState);
 
         // Initialize the loader after the activity is fully created
-        CityLoaderCallbacks.initLoader(getContext(), getLoaderManager(), this, CityAdapter.PROJECTION);
+        //CityLoaderCallbacks.initLoader(getContext(), getLoaderManager(), this, CityAdapter.PROJECTION);
+
+        new BasicCRUDLoader.Builder(getContext(), this)
+                .forUri(CityContract.URI)
+                .queryProjection(CityAdapter.PROJECTION)
+                .orderBy(orderByClause)
+                .initLoader(getLoaderManager(), LoaderIds.CITY_LOADER);
+        loaderStarted = true;
     }
 
     @Override
@@ -97,8 +113,42 @@ public class CityListFragment extends Fragment
         listener.editCity(id);
     }
 
+    public void setSortOrder(int sortOrder) {
+        // Sometimes adapter, updates position more than once. If already using right
+        // sort order, then no need to change anything.
+        if (this.sortOrder == sortOrder) return;
+
+        this.sortOrder = sortOrder;
+
+        switch (sortOrder) {
+            case SORT_BY_DATE:
+                orderByClause = CityContract.Columns.DATE_VISITED + " desc";
+                break;
+            case SORT_BY_NAME:
+                orderByClause = CityContract.Columns.NAME;
+                break;
+            default:
+                orderByClause = null;
+                break;
+        }
+
+        if (loaderStarted) {
+            new BasicCRUDLoader.Builder(getContext(), this)
+                    .forUri(CityContract.URI)
+                    .queryProjection(CityAdapter.PROJECTION)
+                    .orderBy(orderByClause)
+                    .restartLoader(getLoaderManager(), LoaderIds.CITY_LOADER);
+        }
+    }
+
     @Override
-    public void onCityLoadComplete(final Cursor cursor) {
+    public void onCursorLoaded(int loaderId, @Nullable Cursor cursor) {
+        if (loaderId == LoaderIds.CITY_LOADER) {
+            onCityLoadComplete(cursor);
+        }
+    }
+
+    private void onCityLoadComplete(final Cursor cursor) {
 
         CityListFragmentBinding binding = DataBindingUtil.getBinding(getView());
         if (binding == null) return;
