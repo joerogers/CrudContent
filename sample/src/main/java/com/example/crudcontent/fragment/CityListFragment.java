@@ -31,7 +31,7 @@ import android.widget.AdapterView;
 
 import com.example.crudcontent.adapter.CityAdapter;
 import com.example.crudcontent.databinding.CityListFragmentBinding;
-import com.example.crudcontent.loader.LoaderIds;
+import com.example.crudcontent.provider.LoaderIds;
 import com.example.crudcontent.provider.CityContract;
 import com.forkingcode.crudcontent.loader.BasicCRUDLoader;
 

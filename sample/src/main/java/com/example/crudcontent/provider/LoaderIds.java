@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.crudcontent.loader;
+package com.example.crudcontent.provider;
 
 
 /* package */ public final class LoaderIds {

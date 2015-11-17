@@ -24,6 +24,7 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.util.Log;
 
+import com.example.crudcontent.provider.LoaderIds;
 import com.example.crudcontent.provider.StateContract;
 
 import java.lang.ref.WeakReference;
