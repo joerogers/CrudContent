@@ -91,9 +91,7 @@ public class CityListFragment extends Fragment
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        // Initialize the loader after the activity is fully created
-        //CityLoaderCallbacks.initLoader(getContext(), getLoaderManager(), this, CityAdapter.PROJECTION);
-
+        // Initialize the city loader after the activity is fully created
         new BasicCRUDLoader.Builder(getContext(), this)
                 .forUri(CityContract.URI)
                 .queryProjection(CityAdapter.PROJECTION)
@@ -133,6 +131,8 @@ public class CityListFragment extends Fragment
         }
 
         if (loaderStarted) {
+            // example of restarting a loader. If the sort order changes, restart is needed
+            // to modify the order by clause.
             new BasicCRUDLoader.Builder(getContext(), this)
                     .forUri(CityContract.URI)
                     .queryProjection(CityAdapter.PROJECTION)

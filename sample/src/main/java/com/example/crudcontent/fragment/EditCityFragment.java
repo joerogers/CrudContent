@@ -37,9 +37,9 @@ import android.widget.AdapterView;
 import com.example.crudcontent.R;
 import com.example.crudcontent.adapter.StateAdapter;
 import com.example.crudcontent.databinding.EditCityFragmentBinding;
-import com.example.crudcontent.provider.LoaderIds;
-import com.example.crudcontent.loader.StateLoaderCallbacks;
 import com.example.crudcontent.provider.CityContract;
+import com.example.crudcontent.provider.LoaderIds;
+import com.example.crudcontent.provider.StateContract;
 import com.forkingcode.crudcontent.loader.BasicCRUDLoader;
 
 import java.util.Date;
@@ -50,7 +50,6 @@ import java.util.Date;
 public class EditCityFragment extends Fragment
         implements Handler.Callback,
         BasicCRUDLoader.BasicCRUDLoaderCallback,
-        StateLoaderCallbacks.StateLoadListener,
         DatePickerDialogFragment.DatePickerDialogFragmentListener {
 
     private static final String STATE_CITY = "EditCityFragment.city";
@@ -144,9 +143,15 @@ public class EditCityFragment extends Fragment
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        StateLoaderCallbacks.initLoader(getActivity(), getLoaderManager(), this, StateAdapter.PROJECTION);
 
-        // Only initialize loader, if editing a city and the saved instance state is null
+        // Initialize the state loader for the drop down
+        new BasicCRUDLoader.Builder(getContext(), this)
+                .forUri(StateContract.URI)
+                .queryProjection(StateAdapter.PROJECTION)
+                .orderBy(StateContract.Columns.NAME)
+                .initLoader(getLoaderManager(), LoaderIds.STATE_LOADER);
+
+        // Only initialize city loader if editing a city and the saved instance state is null
         // otherwise, the user may have edited data that is now tracked in the save state
         if (cityId != CityContract.NO_CITY_ID && savedInstanceState == null) {
             new BasicCRUDLoader.Builder(getContext(), this)
@@ -154,7 +159,6 @@ public class EditCityFragment extends Fragment
                     .queryProjection(CITY_PROJECTION)
                     .whereMatchesId(cityId)
                     .initLoader(getLoaderManager(), LoaderIds.CITY_LOADER);
-            //CityLoaderCallbacks.initLoader(getActivity(), getLoaderManager(), this, CITY_PROJECTION, cityId);
         }
     }
 
@@ -258,8 +262,7 @@ public class EditCityFragment extends Fragment
         }
     }
 
-    @Override
-    public void onStateLoadComplete(Cursor cursor) {
+    private void onStateLoadComplete(Cursor cursor) {
         EditCityFragmentBinding binding = DataBindingUtil.getBinding(getView());
         if (binding == null) return;
 
