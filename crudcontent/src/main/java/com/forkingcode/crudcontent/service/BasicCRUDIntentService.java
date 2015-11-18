@@ -144,80 +144,82 @@ public class BasicCRUDIntentService extends IntentService {
     }
 
     /**
+     * Indicate want to perform an insert operation with the service. Only one "for"
+     * operation may be provided per Intent
+     *
+     * @param context The context used to build the intent
+     * @param uri     The URI for the provider/table you wish to insert into
+     * @return this intent builder
+     */
+    public static IntentBuilder performInsert(@NonNull Context context, @NonNull Uri uri) {
+        IntentBuilder intentBuilder = new IntentBuilder(context);
+        intentBuilder.setActionAndUri(ACTION_INSERT, uri);
+        return intentBuilder;
+    }
+
+    /**
+     * Indicate want to perform a bulk insert operation with the service. Only one "for"
+     * operation may be provided per Intent
+     *
+     * @param context The context used to build the intent
+     * @param uri The URI for the provider/table you wish to insert data
+     * @return this intent builder
+     */
+    public static IntentBuilder performBulkInsert(@NonNull Context context, @NonNull Uri uri) {
+        IntentBuilder intentBuilder = new IntentBuilder(context);
+        intentBuilder.setActionAndUri(ACTION_BULK_INSERT, uri);
+        intentBuilder.isBulkOperation = true;
+        return intentBuilder;
+    }
+
+    /**
+     * Indicate want to perform an update operation with the service. Only one "for"
+     * operation may be provided per Intent
+     *
+     * @param context The context used to build the intent
+     * @param uri The URI for the provider/table you wish to update
+     * @return this intent builder
+     */
+    public static IntentBuilder performUpdate(@NonNull Context context, @NonNull Uri uri) {
+        IntentBuilder intentBuilder = new IntentBuilder(context);
+        intentBuilder.setActionAndUri(ACTION_UPDATE, uri);
+        return intentBuilder;
+    }
+
+    /**
+     * Indicate want to perform a delete operation with the service. Only one "for"
+     * operation may be provided per Intent
+     *
+     * @param context The context used to build the intent
+     * @param uri The URI for the provider/table you wish to delete from
+     * @return this intent builder
+     */
+    public static IntentBuilder performDelete(@NonNull Context context, @NonNull Uri uri) {
+        IntentBuilder intentBuilder = new IntentBuilder(context);
+        intentBuilder.setActionAndUri(ACTION_DELETE, uri);
+        intentBuilder.isDeleteOperation = true;
+        return intentBuilder;
+    }
+
+    /**
      * Helper class used to build an intent for starting the BasicCRUDIntentService.
      */
     public static class IntentBuilder {
         private final Intent intent;
+        private final Context context;
         private ArrayList<ContentValues> contentValuesList;
         private long id = -1;
         private boolean isBulkOperation = false;
         private boolean isDeleteOperation = false;
 
         /**
-         * Create a new intent builder
+         * Create a new intent builder, called by perform{type} static methods.
          *
          * @param context Context used to build the Intent
          */
-        private IntentBuilder(@NonNull Context context) {
+        protected IntentBuilder(@NonNull Context context) {
+            this.context = context;
             intent = new Intent(context, BasicCRUDIntentService.class);
-        }
-
-        /**
-         * Indicate want to perform an insert operation with the service. Only one "for"
-         * operation may be provided per Intent
-         *
-         * @param context The context used to build the intent
-         * @param uri     The URI for the provider/table you wish to insert into
-         * @return this intent builder
-         */
-        public static IntentBuilder buildForInsert(@NonNull Context context, @NonNull Uri uri) {
-            IntentBuilder intentBuilder = new IntentBuilder(context);
-            intentBuilder.setActionAndUri(ACTION_INSERT, uri);
-            return intentBuilder;
-        }
-
-        /**
-         * Indicate want to perform a bulk insert operation with the service. Only one "for"
-         * operation may be provided per Intent
-         *
-         * @param context The context used to build the intent
-         * @param uri The URI for the provider/table you wish to insert data
-         * @return this intent builder
-         */
-        public static IntentBuilder buildForBulkInsert(@NonNull Context context, @NonNull Uri uri) {
-            IntentBuilder intentBuilder = new IntentBuilder(context);
-            intentBuilder.setActionAndUri(ACTION_BULK_INSERT, uri);
-            intentBuilder.isBulkOperation = true;
-            return intentBuilder;
-        }
-
-        /**
-         * Indicate want to perform an update operation with the service. Only one "for"
-         * operation may be provided per Intent
-         *
-         * @param context The context used to build the intent
-         * @param uri The URI for the provider/table you wish to update
-         * @return this intent builder
-         */
-        public static IntentBuilder buildForUpdate(@NonNull Context context, @NonNull Uri uri) {
-            IntentBuilder intentBuilder = new IntentBuilder(context);
-            intentBuilder.setActionAndUri(ACTION_UPDATE, uri);
-            return intentBuilder;
-        }
-
-        /**
-         * Indicate want to perform a delete operation with the service. Only one "for"
-         * operation may be provided per Intent
-         *
-         * @param context The context used to build the intent
-         * @param uri The URI for the provider/table you wish to delete from
-         * @return this intent builder
-         */
-        public static IntentBuilder buildForDelete(@NonNull Context context, @NonNull Uri uri) {
-            IntentBuilder intentBuilder = new IntentBuilder(context);
-            intentBuilder.setActionAndUri(ACTION_DELETE, uri);
-            intentBuilder.isDeleteOperation = true;
-            return intentBuilder;
         }
 
         /**
@@ -314,9 +316,18 @@ public class BasicCRUDIntentService extends IntentService {
          * @return this intent builder
          * @see BasicCrudResultReceiver
          */
-        public IntentBuilder setResultReceiver(@NonNull BasicCrudResultReceiver resultReceiver) {
+        public IntentBuilder resultReceiver(@NonNull BasicCrudResultReceiver resultReceiver) {
             intent.putExtra(EXTRA_RESULT_RECEIVER, resultReceiver);
             return this;
+        }
+
+        /**
+         * Build the intent and start the service. The options provided will be validated
+         * @throws IllegalStateException If the content values were not provided for
+         * insert, bulk insert, or update.
+         */
+        public void start() {
+            context.startService(buildIntent());
         }
 
         /**
@@ -324,13 +335,15 @@ public class BasicCRUDIntentService extends IntentService {
          *
          * @return The new intent to use to invoke the BasicCRUDIntentService
          * @see BasicCRUDIntentService
+         * @throws IllegalStateException If the content values were not provided for
+         * insert, bulk insert, or update.
          */
-        public Intent build() {
+        public Intent buildIntent() {
             if (contentValuesList != null && !contentValuesList.isEmpty()) {
                 intent.putExtra(EXTRA_VALUES, contentValuesList);
             }
             else if (!isDeleteOperation) {
-                throw new IllegalStateException("Must provide ContentValues for insert, bulk insert or update");
+                throw new IllegalStateException("Must provide ContentValues for insert, bulk insert or update operations");
             }
 
             if (id > 0) {
@@ -342,9 +355,6 @@ public class BasicCRUDIntentService extends IntentService {
         }
 
         private void setActionAndUri(String action, Uri uri) {
-            if (intent.getAction() != null) {
-                throw new IllegalStateException("Only call one of forInsert(), forBulkInsert(), forUpdate(), or forDelete()");
-            }
             intent.setAction(action);
             intent.setData(uri);
         }

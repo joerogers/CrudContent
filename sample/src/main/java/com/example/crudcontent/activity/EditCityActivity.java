@@ -102,10 +102,10 @@ public class EditCityActivity extends AppCompatActivity
                 return true;
 
             case R.id.action_delete:
-                startService(BasicCRUDIntentService.IntentBuilder
-                        .buildForDelete(this, CityContract.URI)
+                BasicCRUDIntentService
+                        .performDelete(this, CityContract.URI)
                         .whereMatchesId(cityId)
-                        .build());
+                        .start();
 
                 finish();
                 return true;
@@ -116,24 +116,22 @@ public class EditCityActivity extends AppCompatActivity
 
     @Override
     public void submitCity(ContentValues cityValues) {
-        Intent intent;
 
         if (cityId == CityContract.NO_CITY_ID) {
-            intent = BasicCRUDIntentService.IntentBuilder
-                    .buildForInsert(this, CityContract.URI)
+            BasicCRUDIntentService
+                    .performInsert(this, CityContract.URI)
                     .usingValues(cityValues)
-                    .build();
+                    .start();
         }
         else {
-            intent = BasicCRUDIntentService.IntentBuilder
-                    .buildForUpdate(this, CityContract.URI)
+            BasicCRUDIntentService
+                    .performUpdate(this, CityContract.URI)
                     .whereMatchesId(cityId)
                     .usingValues(cityValues)
-                    .build();
+                    .start();
         }
 
-        // Start the update/insert and finish.
-        startService(intent);
+        // finish activity...
         finish();
     }
 }

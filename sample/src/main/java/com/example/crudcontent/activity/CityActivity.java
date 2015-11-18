@@ -16,7 +16,6 @@
 
 package com.example.crudcontent.activity;
 
-import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.os.Handler;
@@ -67,14 +66,11 @@ public class CityActivity extends AppCompatActivity
         }
 
         if (!createdStates) {
-            Intent intent = BasicCRUDIntentService.IntentBuilder
-                    .buildForBulkInsert(this, StateContract.URI)
+            BasicCRUDIntentService
+                    .performBulkInsert(this, StateContract.URI)
                     .usingValues(StateContract.buildStateValuesArray())
-                    .setResultReceiver(new StatesCreatedResultReceiver(this))
-                    .build();
-
-            // Ensure state data exists
-            startService(intent);
+                    .resultReceiver(new StatesCreatedResultReceiver(this))
+                    .start();
         }
 
         if (savedInstanceState != null) {

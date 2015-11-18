@@ -91,12 +91,12 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
     public void test01Insert() throws Exception {
 
         // Should return a valid uri in form of: uri/{id}. Mock provider always set id to 1.
-        Intent serviceIntent = BasicCRUDIntentService.IntentBuilder
-                .buildForInsert(getContext(), uri)
+        Intent serviceIntent = BasicCRUDIntentService
+                .performInsert(getContext(), uri)
                 .usingValues(new ContentValues())
 
                         // Receiver is called by intent service to indicate status of the insert
-                .setResultReceiver(new BasicCrudResultReceiver(null) {
+                .resultReceiver(new BasicCrudResultReceiver(null) {
                     @Override
                     protected void onInsertComplete(Uri insertResultUri) {
                         assertNotNull("Row failed to insert", insertResultUri);
@@ -107,7 +107,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
                         success = true;
                     }
                 })
-                .build();
+                .buildIntent();
 
         // Validate intent
         assertNotNull(serviceIntent);
@@ -134,10 +134,10 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
         valuesArray[1] = new ContentValues();
 
         // Returns number of content values.
-        Intent serviceIntent = BasicCRUDIntentService.IntentBuilder
-                .buildForBulkInsert(getContext(), uri)
+        Intent serviceIntent = BasicCRUDIntentService
+                .performBulkInsert(getContext(), uri)
                 .usingValues(valuesArray)
-                .setResultReceiver(new BasicCrudResultReceiver(null) {
+                .resultReceiver(new BasicCrudResultReceiver(null) {
                     @Override
                     protected void onBulkInsertComplete(int rows) {
                         assertEquals(ServiceMockContentProvider.BULK_INSERT_RESULT, rows);
@@ -145,7 +145,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
                         success = true;
                     }
                 })
-                .build();
+                .buildIntent();
 
         // Validate intent
         assertNotNull(serviceIntent);
@@ -169,11 +169,11 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
 
         long id = 2;
 
-        Intent serviceIntent = BasicCRUDIntentService.IntentBuilder
-                .buildForUpdate(getContext(), uri)
+        Intent serviceIntent = BasicCRUDIntentService
+                .performUpdate(getContext(), uri)
                 .whereMatchesId(id)
                 .usingValues(new ContentValues())
-                .setResultReceiver(new BasicCrudResultReceiver(null) {
+                .resultReceiver(new BasicCrudResultReceiver(null) {
                     @Override
                     protected void onUpdateComplete(int rows) {
                         assertEquals(ServiceMockContentProvider.UPDATE_RESULT, rows);
@@ -181,7 +181,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
                         success = true;
                     }
                 })
-                .build();
+                .buildIntent();
 
         // Validate intent
         assertNotNull(serviceIntent);
@@ -206,11 +206,11 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
         final String selection = "column1 = ? and column2 = ?";
         final String[] selectionArgs = new String[]{"arg1", "arg2"};
 
-        Intent serviceIntent = BasicCRUDIntentService.IntentBuilder
-                .buildForUpdate(getContext(), uri)
+        Intent serviceIntent = BasicCRUDIntentService
+                .performUpdate(getContext(), uri)
                 .whereMatchesSelection(selection, selectionArgs)
                 .usingValues(new ContentValues())
-                .setResultReceiver(new BasicCrudResultReceiver(null) {
+                .resultReceiver(new BasicCrudResultReceiver(null) {
                     @Override
                     protected void onUpdateComplete(int rows) {
                         assertEquals(ServiceMockContentProvider.UPDATE_RESULT, rows);
@@ -218,7 +218,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
                         success = true;
                     }
                 })
-                .build();
+                .buildIntent();
 
         // Validate intent
         assertNotNull(serviceIntent);
@@ -242,10 +242,10 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
 
         final long id = 4;
 
-        Intent serviceIntent = BasicCRUDIntentService.IntentBuilder
-                .buildForDelete(getContext(), uri)
+        Intent serviceIntent = BasicCRUDIntentService
+                .performDelete(getContext(), uri)
                 .whereMatchesId(id)
-                .setResultReceiver(new BasicCrudResultReceiver(null) {
+                .resultReceiver(new BasicCrudResultReceiver(null) {
                     @Override
                     protected void onDeleteComplete(int rows) {
                         assertEquals(ServiceMockContentProvider.DELETE_RESULT, rows);
@@ -253,7 +253,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
                         success = true;
                     }
                 })
-                .build();
+                .buildIntent();
 
         // Validate intent
         assertNotNull(serviceIntent);
@@ -278,10 +278,10 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
         final String selection = "column1 = ? and column2 = ?";
         final String[] selectionArgs = new String[]{"arg1", "arg2"};
 
-        Intent serviceIntent = BasicCRUDIntentService.IntentBuilder
-                .buildForDelete(getContext(), uri)
+        Intent serviceIntent = BasicCRUDIntentService
+                .performDelete(getContext(), uri)
                 .whereMatchesSelection(selection, selectionArgs)
-                .setResultReceiver(new BasicCrudResultReceiver(null) {
+                .resultReceiver(new BasicCrudResultReceiver(null) {
                     @Override
                     protected void onDeleteComplete(int rows) {
                         assertEquals(ServiceMockContentProvider.DELETE_RESULT, rows);
@@ -289,7 +289,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
                         success = true;
                     }
                 })
-                .build();
+                .buildIntent();
 
         // Validate intent
         assertNotNull(serviceIntent);
@@ -312,59 +312,59 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
     public void test07NoContentValuesForInsert() throws Exception {
         thrown.expect(IllegalStateException.class);
 
-        BasicCRUDIntentService.IntentBuilder
-                .buildForInsert(getContext(), uri)
-                .build();
+        BasicCRUDIntentService
+                .performInsert(getContext(), uri)
+                .start();
     }
 
     @Test
     public void test08BothIdAndSelectionProvided() {
         thrown.expect(IllegalStateException.class);
 
-        BasicCRUDIntentService.IntentBuilder
-                .buildForUpdate(getContext(), uri)
+        BasicCRUDIntentService
+                .performUpdate(getContext(), uri)
                 .whereMatchesId(1)
                 .whereMatchesSelection("test", null)
-                .build();
+                .start();
     }
 
     @Test
     public void test09EmptyValuesArray() throws Exception {
         thrown.expect(IllegalStateException.class);
 
-        BasicCRUDIntentService.IntentBuilder
-                .buildForInsert(getContext(), uri)
+        BasicCRUDIntentService
+                .performInsert(getContext(), uri)
                 .usingValues(new ContentValues[0])
-                .build();
+                .start();
     }
 
     @Test
     public void test10EmptyValuesArrayList() throws Exception {
         thrown.expect(IllegalStateException.class);
 
-        BasicCRUDIntentService.IntentBuilder
-                .buildForInsert(getContext(), uri)
+        BasicCRUDIntentService
+                .performInsert(getContext(), uri)
                 .usingValues(new ArrayList<ContentValues>(0))
-                .build();
+                .start();
     }
 
     @Test
     public void test11UsingMultipleRowsWithoutBulkInsert() throws Exception {
         thrown.expect(IllegalStateException.class);
 
-        BasicCRUDIntentService.IntentBuilder
-                .buildForInsert(getContext(), uri)
+        BasicCRUDIntentService
+                .performInsert(getContext(), uri)
                 .usingValues(new ArrayList<ContentValues>(2))
-                .build();
+                .start();
     }
 
     @Test
     public void test12UsingContentValuesWithDelete() throws Exception {
         thrown.expect(IllegalStateException.class);
 
-        BasicCRUDIntentService.IntentBuilder
-                .buildForDelete(getContext(), uri)
+        BasicCRUDIntentService
+                .performDelete(getContext(), uri)
                 .usingValues(new ContentValues())
-                .build();
+                .start();
     }
 }
