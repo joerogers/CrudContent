@@ -31,8 +31,8 @@ import android.widget.AdapterView;
 
 import com.example.crudcontent.adapter.CityAdapter;
 import com.example.crudcontent.databinding.CityListFragmentBinding;
-import com.example.crudcontent.provider.LoaderIds;
 import com.example.crudcontent.provider.CityContract;
+import com.example.crudcontent.provider.LoaderIds;
 import com.forkingcode.crudcontent.loader.BasicCRUDLoader;
 
 /**
@@ -91,12 +91,16 @@ public class CityListFragment extends Fragment
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        // Initialize the city loader after the activity is fully created
-        new BasicCRUDLoader.Builder(getContext(), this)
+        // Initialize the city loader after the activity is fully created. Not using restart
+        // so that on rotation, the "same" data is provided without having to query the database
+        // again.
+        BasicCRUDLoader.newInstance(getContext(), getLoaderManager())
                 .forUri(CityContract.URI)
-                .queryProjection(CityAdapter.PROJECTION)
+                .selectColumns(CityAdapter.PROJECTION)
                 .orderBy(orderByClause)
-                .initLoader(getLoaderManager(), LoaderIds.CITY_LOADER);
+                .callback(this)
+                .loaderId(LoaderIds.CITY_LOADER)
+                .initLoader();
         loaderStarted = true;
     }
 
@@ -133,11 +137,13 @@ public class CityListFragment extends Fragment
         if (loaderStarted) {
             // example of restarting a loader. If the sort order changes, restart is needed
             // to modify the order by clause.
-            new BasicCRUDLoader.Builder(getContext(), this)
+            BasicCRUDLoader.newInstance(getContext(), getLoaderManager())
                     .forUri(CityContract.URI)
-                    .queryProjection(CityAdapter.PROJECTION)
+                    .selectColumns(CityAdapter.PROJECTION)
                     .orderBy(orderByClause)
-                    .restartLoader(getLoaderManager(), LoaderIds.CITY_LOADER);
+                    .callback(this)
+                    .loaderId(LoaderIds.CITY_LOADER)
+                    .restartLoader();
         }
     }
 

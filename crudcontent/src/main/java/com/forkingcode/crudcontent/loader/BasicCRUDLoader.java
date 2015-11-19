@@ -21,8 +21,8 @@ import com.forkingcode.crudcontent.provider.BasicCRUDProvider;
  * works in tandem with the provider to provide automatic updated when the underlying data is modified to provide
  * a new cursor with the updated data.
  *
- * <p>To create and start this loader, use the Builder class to form queries including properly encoding the distinct and
- * limit query parameters.
+ * <p>To create and start this loader, use the static newInstance method to start to form queries including
+ * properly encoding the distinct and limit query parameters for the loader.
  *
  * <p>You must provide a BasicCRUDLoaderCallback instance which has a single method onCursorLoaded which
  * provides the loaderId used for this loader and the cursor result of the query. At that time, you should release
@@ -30,7 +30,6 @@ import com.forkingcode.crudcontent.provider.BasicCRUDProvider;
  * the loader is destroyed the method may be called passing "null" as the cursor to indicate the prior cursor
  * should be released.
  *
- * @see com.forkingcode.crudcontent.loader.BasicCRUDLoader.Builder
  * @see android.support.v4.app.LoaderManager
  * @see android.support.v4.content.CursorLoader
  * @see android.support.v4.app.LoaderManager.LoaderCallbacks
@@ -84,13 +83,21 @@ public class BasicCRUDLoader implements LoaderManager.LoaderCallbacks<Cursor> {
         void onCursorLoaded(int loaderId, @Nullable Cursor cursor);
     }
 
+    /**
+     * Default loader id if none is provided. Using the default will cause issues if you create more
+     * than one loader fetching different data from the same activity or fragment. If using init only the
+     * first loader will return results. If using restart, only the last loader is guaranteed to return results.
+     */
+    public static final int DEFAULT_LOADER_ID = 1;
+
     private static final String ARG_URI = "uri";
     private static final String ARG_PROJECTION = "projection";
     private static final String ARG_SELECTION = "selection";
     private static final String ARG_SELECTION_ARGS = "selectionArgs";
     private static final String ARG_SORT_ORDER = "sortOrder";
 
-    private static final String TAG = "BasicCRUDLoader";
+    private static final String TAG = "BasicCRUDLocader";
+
     private static boolean DEBUG = false;
     private final Context context;
     private final BasicCRUDLoaderCallback loaderCallback;
@@ -118,7 +125,7 @@ public class BasicCRUDLoader implements LoaderManager.LoaderCallbacks<Cursor> {
      * @param id   The ID whose loader is to be created.
      * @param args Any arguments supplied by the caller.
      * @return Return a new Loader instance that is ready to start loading.
-     * @see com.forkingcode.crudcontent.loader.BasicCRUDLoader.Builder
+     * @see RequestBuilder to see how the args are built
      */
     @Override
     public final Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -181,6 +188,18 @@ public class BasicCRUDLoader implements LoaderManager.LoaderCallbacks<Cursor> {
 
 
     /**
+     * Start creating a new instance of the loader. This follows a builder pattern with the last
+     * call being initLoader or restartLoader
+     *
+     * @param context       The context used to create the loader. Internally an application context is stored.
+     * @param loaderManager The loader manager to use to create the loader
+     * @return A new loader request builder allowing you to form the query the cursor loader will perform.
+     */
+    public static RequestBuilder newInstance(Context context, LoaderManager loaderManager) {
+        return new RequestBuilder(context, loaderManager);
+    }
+
+    /**
      * Helper class used to initialize or restart the loader. This builder pattern allows you
      * to add information as required for the query. Note: forUri must be called however, all other
      * methods are optional.
@@ -190,23 +209,27 @@ public class BasicCRUDLoader implements LoaderManager.LoaderCallbacks<Cursor> {
      * a new loader, or restart the current one. When these methods are called the URI is updated with any
      * optional parameters and the loader is started with the appropriate argument bundle.
      */
-    public static class Builder {
+    public static class RequestBuilder {
+        private final Context context;
+        private final LoaderManager loaderManager;
         private final Bundle args = new Bundle();
-        private final BasicCRUDLoader basicCRUDLoader;
+        private BasicCRUDLoaderCallback loaderCallback;
+        private BasicCRUDLoader basicCRUDLoader;
         private boolean distinct = false;
         private String limit = null;
         private long rowId = -1;
+        private int loaderId = DEFAULT_LOADER_ID;
         private boolean loaderStarted = false;
 
         /**
          * Initialize a new builder for invoking the BasicCRUDLoader.
          *
-         * @param context        The context used to create the loader. An application context will be used,
-         *                       to safely ensure no activity or view context is held by the loader.
-         * @param loaderCallback The basic CRUD loader callback to use to provide the results of the loader.
+         * @param context       The context used to create the loader. Internally an application context is stored.
+         * @param loaderManager The loader manager to use to create the loader
          */
-        public Builder(@NonNull Context context, @NonNull BasicCRUDLoaderCallback loaderCallback) {
-            basicCRUDLoader = new BasicCRUDLoader(context, loaderCallback);
+        protected RequestBuilder(@NonNull Context context, @NonNull LoaderManager loaderManager) {
+            this.context = context.getApplicationContext();
+            this.loaderManager = loaderManager;
         }
 
         /**
@@ -217,8 +240,32 @@ public class BasicCRUDLoader implements LoaderManager.LoaderCallbacks<Cursor> {
          * @return This builder object
          */
         @NonNull
-        public Builder forUri(@NonNull Uri uri) {
+        public RequestBuilder forUri(@NonNull Uri uri) {
             args.putParcelable(ARG_URI, uri);
+            return this;
+        }
+
+        /**
+         * Provide the callback used to listen for results of the loader query
+         * @param loaderCallback The loader callback to use for this loader. This is a required
+         *                       parameter
+         * @return This builder object
+         */
+        @NonNull
+        public RequestBuilder callback(@NonNull BasicCRUDLoaderCallback loaderCallback) {
+            this.loaderCallback = loaderCallback;
+            return this;
+        }
+
+        /**
+         * Optionally provide the loader id to use for this loader. Default loader id will be 1.
+         * This parameter is required if creating more than one loader in an activity/fragment
+         * @param loaderId The loader id of the loader
+         * @return This builder object
+         */
+        @NonNull
+        public RequestBuilder loaderId(int loaderId) {
+            this.loaderId = loaderId;
             return this;
         }
 
@@ -231,7 +278,7 @@ public class BasicCRUDLoader implements LoaderManager.LoaderCallbacks<Cursor> {
          * @return This builder object
          */
         @NonNull
-        public Builder queryProjection(@Nullable String[] projection) {
+        public RequestBuilder selectColumns(@Nullable String[] projection) {
             args.putStringArray(ARG_PROJECTION, projection);
             return this;
         }
@@ -243,7 +290,7 @@ public class BasicCRUDLoader implements LoaderManager.LoaderCallbacks<Cursor> {
          * @return This builder object
          */
         @NonNull
-        public Builder distinct() {
+        public RequestBuilder distinct() {
             this.distinct = true;
             return this;
         }
@@ -261,8 +308,8 @@ public class BasicCRUDLoader implements LoaderManager.LoaderCallbacks<Cursor> {
          *                               or a specific selection should be provided.
          */
         @NonNull
-        public Builder whereMatchesId(long rowId) {
-            if (!TextUtils.isEmpty(args.getString(ARG_SELECTION))) {
+        public RequestBuilder whereMatchesId(long rowId) {
+            if (rowId > 0 && !TextUtils.isEmpty(args.getString(ARG_SELECTION))) {
                 throw new IllegalStateException("Do not provide both a row id and a selection");
             }
             this.rowId = rowId;
@@ -282,7 +329,7 @@ public class BasicCRUDLoader implements LoaderManager.LoaderCallbacks<Cursor> {
          * @throws IllegalStateException If you already called whereMatchesRowId as only the rowId
          *                               or a specific selection should be provided.
          */
-        public Builder whereMatchesSelection(@Nullable String selection, @Nullable String[] selectionArgs) {
+        public RequestBuilder whereMatchesSelection(@Nullable String selection, @Nullable String[] selectionArgs) {
             if (rowId > 0 && selection != null) {
                 throw new IllegalStateException("Do not provide both a row id and a selection");
             }
@@ -298,7 +345,7 @@ public class BasicCRUDLoader implements LoaderManager.LoaderCallbacks<Cursor> {
          *                If {@code null} then the provider is free to define the sort order.
          * @return This builder object
          */
-        public Builder orderBy(String orderBy) {
+        public RequestBuilder orderBy(String orderBy) {
             args.putString(ARG_SORT_ORDER, orderBy);
             return this;
         }
@@ -310,7 +357,7 @@ public class BasicCRUDLoader implements LoaderManager.LoaderCallbacks<Cursor> {
          *              formatted as LIMIT clause. Passing null denotes no LIMIT clause.
          * @return This builder object
          */
-        public Builder withLimit(String limit) {
+        public RequestBuilder limit(String limit) {
             this.limit = TextUtils.isEmpty(limit) ? null : limit;
             return this;
         }
@@ -329,18 +376,11 @@ public class BasicCRUDLoader implements LoaderManager.LoaderCallbacks<Cursor> {
          * will be called immediately (inside of this function), so you must be prepared
          * for this to happen.
          *
-         * @param loaderManager The loader manager to use to start the loader.
-         * @param loaderId      A unique identifier for this loader.  Can be whatever you want.
-         *                      Identifiers are scoped to a particular LoaderManager instance.
          * @return The created {@link android.support.v4.content.CursorLoader}
          * @throws IllegalStateException If the Uri is not provided or is null.
          */
-        public CursorLoader initLoader(@NonNull LoaderManager loaderManager, int loaderId) {
-            if (loaderStarted) {
-                throw new IllegalStateException("Loader already started. Use a new builder");
-            }
-            finalizeUri();
-            loaderStarted = true;
+        public CursorLoader initLoader() {
+            validateAndPrepareLoaderValues();
             return (CursorLoader) loaderManager.initLoader(loaderId, args, basicCRUDLoader);
         }
 
@@ -353,19 +393,39 @@ public class BasicCRUDLoader implements LoaderManager.LoaderCallbacks<Cursor> {
          * its work. The callback will be delivered before the old loader
          * is destroyed.
          *
-         * @param loaderManager The loader manager to use to start the loader.
-         * @param loaderId      A unique identifier for this loader.  Can be whatever you want.
-         *                      Identifiers are scoped to a particular LoaderManager instance.
+         * <p>This is more expensive if not reusing the same loader across rotation, as the existing
+         * loader with valid data will be destroyed only to query the same information again.
+         *
          * @return The created {@link android.support.v4.content.CursorLoader}
          * @throws IllegalStateException If the Uri is not provided or is null.
          */
-        public CursorLoader restartLoader(@NonNull LoaderManager loaderManager, int loaderId) {
+        public CursorLoader restartLoader() {
+            validateAndPrepareLoaderValues();
+            return (CursorLoader) loaderManager.restartLoader(loaderId, args, basicCRUDLoader);
+        }
+
+        /**
+         * Helper to validate required parameters are provided and prepare user input to
+         * initialize or restart the laoder.
+         */
+        private void validateAndPrepareLoaderValues() {
             if (loaderStarted) {
                 throw new IllegalStateException("Loader already started. Use a new builder");
             }
-            finalizeUri();
             loaderStarted = true;
-            return (CursorLoader) loaderManager.restartLoader(loaderId, args, basicCRUDLoader);
+
+            // validate and prepare the Uri
+            finalizeUri();
+
+            if (DEBUG && loaderId == 1) {
+                Log.w(TAG, "Using default loader id. May cause issues with multiple loaders");
+            }
+
+            if (loaderCallback == null) {
+                throw new IllegalStateException("Must provide a BasicCRUDLoaderCallback");
+            }
+
+            basicCRUDLoader = new BasicCRUDLoader(context, loaderCallback);
         }
 
         /**

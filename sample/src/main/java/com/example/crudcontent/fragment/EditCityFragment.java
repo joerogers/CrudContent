@@ -145,20 +145,24 @@ public class EditCityFragment extends Fragment
         super.onActivityCreated(savedInstanceState);
 
         // Initialize the state loader for the drop down
-        new BasicCRUDLoader.Builder(getContext(), this)
+        BasicCRUDLoader.newInstance(getContext(), getLoaderManager())
                 .forUri(StateContract.URI)
-                .queryProjection(StateAdapter.PROJECTION)
+                .selectColumns(StateAdapter.PROJECTION)
                 .orderBy(StateContract.Columns.NAME)
-                .initLoader(getLoaderManager(), LoaderIds.STATE_LOADER);
+                .callback(this)
+                .loaderId(LoaderIds.STATE_LOADER)
+                .initLoader();
 
         // Only initialize city loader if editing a city and the saved instance state is null
         // otherwise, the user may have edited data that is now tracked in the save state
         if (cityId != CityContract.NO_CITY_ID && savedInstanceState == null) {
-            new BasicCRUDLoader.Builder(getContext(), this)
+            BasicCRUDLoader.newInstance(getContext(), getLoaderManager())
                     .forUri(CityContract.URI)
-                    .queryProjection(CITY_PROJECTION)
+                    .selectColumns(CITY_PROJECTION)
                     .whereMatchesId(cityId)
-                    .initLoader(getLoaderManager(), LoaderIds.CITY_LOADER);
+                    .callback(this)
+                    .loaderId(LoaderIds.CITY_LOADER)
+                    .initLoader();
         }
     }
 

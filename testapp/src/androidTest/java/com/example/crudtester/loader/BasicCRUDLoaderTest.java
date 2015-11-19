@@ -70,6 +70,7 @@ public class BasicCRUDLoaderTest extends Assert {
     @Before
     public void setUp() throws Exception {
         context = InstrumentationRegistry.getTargetContext();
+        BasicCRUDLoader.enableLogging(true);
         mockLoaderManager = new MockLoaderManager();
         mockBasicCRUDLoaderCallback = new MockBasicCRUDLoaderCallback();
     }
@@ -90,9 +91,11 @@ public class BasicCRUDLoaderTest extends Assert {
     @UiThreadTest
     public void test01InitLoaderNoParams() {
 
-        CursorLoader loader = new BasicCRUDLoader.Builder(context, mockBasicCRUDLoaderCallback)
+        CursorLoader loader = BasicCRUDLoader.newInstance(context, mockLoaderManager)
                 .forUri(testUri)
-                .initLoader(mockLoaderManager, LOADER_ID);
+                .callback(mockBasicCRUDLoaderCallback)
+                .loaderId(LOADER_ID)
+                .initLoader();
 
         assertNotNull(loader);
 
@@ -120,12 +123,14 @@ public class BasicCRUDLoaderTest extends Assert {
     @UiThreadTest
     public void test02InitLoaderWithParams() {
 
-        CursorLoader loader = new BasicCRUDLoader.Builder(context, mockBasicCRUDLoaderCallback)
+        CursorLoader loader = BasicCRUDLoader.newInstance(context, mockLoaderManager)
                 .forUri(testUri)
-                .queryProjection(testProjection)
+                .selectColumns(testProjection)
                 .whereMatchesSelection(testSelection, testSelectionArgs)
                 .orderBy(testOrderBy)
-                .initLoader(mockLoaderManager, LOADER_ID);
+                .callback(mockBasicCRUDLoaderCallback)
+                .loaderId(LOADER_ID)
+                .initLoader();
 
         assertNotNull(loader);
 
@@ -153,12 +158,14 @@ public class BasicCRUDLoaderTest extends Assert {
     @UiThreadTest
     public void test03InitLoaderWithParamsAndId() {
 
-        CursorLoader loader = new BasicCRUDLoader.Builder(context, mockBasicCRUDLoaderCallback)
+        CursorLoader loader = BasicCRUDLoader.newInstance(context, mockLoaderManager)
                 .forUri(testUri)
-                .queryProjection(testProjection)
+                .selectColumns(testProjection)
                 .whereMatchesId(ROW_ID)
                 .orderBy(testOrderBy)
-                .initLoader(mockLoaderManager, LOADER_ID);
+                .callback(mockBasicCRUDLoaderCallback)
+                .loaderId(LOADER_ID)
+                .initLoader();
 
         assertNotNull(loader);
 
@@ -185,9 +192,11 @@ public class BasicCRUDLoaderTest extends Assert {
     @UiThreadTest
     public void test04InitLoaderUriWithRowId() {
 
-        CursorLoader loader = new BasicCRUDLoader.Builder(context, mockBasicCRUDLoaderCallback)
+        CursorLoader loader = BasicCRUDLoader.newInstance(context, mockLoaderManager)
                 .forUri(ContentUris.withAppendedId(testUri, ROW_ID))
-                .initLoader(mockLoaderManager, LOADER_ID);
+                .callback(mockBasicCRUDLoaderCallback)
+                .loaderId(LOADER_ID)
+                .initLoader();
 
         assertNotNull(loader);
 
@@ -215,9 +224,11 @@ public class BasicCRUDLoaderTest extends Assert {
     @UiThreadTest
     public void test05RestartLoaderNoParams() {
 
-        CursorLoader loader = new BasicCRUDLoader.Builder(context, mockBasicCRUDLoaderCallback)
+        CursorLoader loader = BasicCRUDLoader.newInstance(context, mockLoaderManager)
                 .forUri(testUri)
-                .restartLoader(mockLoaderManager, LOADER_ID);
+                .callback(mockBasicCRUDLoaderCallback)
+                .loaderId(LOADER_ID)
+                .restartLoader();
 
         assertNotNull(loader);
 
@@ -245,12 +256,14 @@ public class BasicCRUDLoaderTest extends Assert {
     @UiThreadTest
     public void test06RestartLoaderWithParams() {
 
-        CursorLoader loader = new BasicCRUDLoader.Builder(context, mockBasicCRUDLoaderCallback)
+        CursorLoader loader = BasicCRUDLoader.newInstance(context, mockLoaderManager)
                 .forUri(testUri)
-                .queryProjection(testProjection)
+                .selectColumns(testProjection)
                 .whereMatchesSelection(testSelection, testSelectionArgs)
                 .orderBy(testOrderBy)
-                .restartLoader(mockLoaderManager, LOADER_ID);
+                .callback(mockBasicCRUDLoaderCallback)
+                .loaderId(LOADER_ID)
+                .restartLoader();
 
         assertNotNull(loader);
 
@@ -278,12 +291,14 @@ public class BasicCRUDLoaderTest extends Assert {
     @UiThreadTest
     public void test07RestartLoaderWithParamsAndId() {
 
-        CursorLoader loader = new BasicCRUDLoader.Builder(context, mockBasicCRUDLoaderCallback)
+        CursorLoader loader = BasicCRUDLoader.newInstance(context, mockLoaderManager)
                 .forUri(testUri)
-                .queryProjection(testProjection)
+                .selectColumns(testProjection)
                 .whereMatchesId(ROW_ID)
                 .orderBy(testOrderBy)
-                .initLoader(mockLoaderManager, LOADER_ID);
+                .callback(mockBasicCRUDLoaderCallback)
+                .loaderId(LOADER_ID)
+                .initLoader();
 
         assertNotNull(loader);
 
@@ -306,9 +321,11 @@ public class BasicCRUDLoaderTest extends Assert {
     @UiThreadTest
     public void test08TestLoadFinishedCallback() throws Exception {
 
-        CursorLoader loader = new BasicCRUDLoader.Builder(context, mockBasicCRUDLoaderCallback)
+        CursorLoader loader = BasicCRUDLoader.newInstance(context, mockLoaderManager)
                 .forUri(testUri)
-                .initLoader(mockLoaderManager, LOADER_ID);
+                .callback(mockBasicCRUDLoaderCallback)
+                .loaderId(LOADER_ID)
+                .initLoader();
 
         // Ensure the callback has not yet been called
         assertFalse(mockBasicCRUDLoaderCallback.isCalled());
@@ -332,9 +349,11 @@ public class BasicCRUDLoaderTest extends Assert {
     @UiThreadTest
     public void test09TestLoadResetCallback() throws Exception {
 
-        CursorLoader loader = new BasicCRUDLoader.Builder(context, mockBasicCRUDLoaderCallback)
+        CursorLoader loader = BasicCRUDLoader.newInstance(context, mockLoaderManager)
                 .forUri(testUri)
-                .initLoader(mockLoaderManager, LOADER_ID);
+                .callback(mockBasicCRUDLoaderCallback)
+                .loaderId(LOADER_ID)
+                .initLoader();
 
         // Ensure the callback has not yet been called
         assertFalse(mockBasicCRUDLoaderCallback.isCalled());
@@ -360,10 +379,12 @@ public class BasicCRUDLoaderTest extends Assert {
     @UiThreadTest
     public void test10LoaderDistinctQuery() {
 
-        CursorLoader loader = new BasicCRUDLoader.Builder(context, mockBasicCRUDLoaderCallback)
+        CursorLoader loader = BasicCRUDLoader.newInstance(context, mockLoaderManager)
                 .forUri(testUri)
                 .distinct()
-                .initLoader(mockLoaderManager, LOADER_ID);
+                .callback(mockBasicCRUDLoaderCallback)
+                .loaderId(LOADER_ID)
+                .initLoader();
 
         assertNotNull(loader);
 
@@ -400,10 +421,12 @@ public class BasicCRUDLoaderTest extends Assert {
     @UiThreadTest
     public void test11LoaderLimitQuery() {
 
-        CursorLoader loader = new BasicCRUDLoader.Builder(context, mockBasicCRUDLoaderCallback)
+        CursorLoader loader = BasicCRUDLoader.newInstance(context, mockLoaderManager)
                 .forUri(testUri)
-                .withLimit(testLimit)
-                .restartLoader(mockLoaderManager, LOADER_ID);
+                .limit(testLimit)
+                .callback(mockBasicCRUDLoaderCallback)
+                .loaderId(LOADER_ID)
+                .restartLoader();
 
         assertNotNull(loader);
 
@@ -440,11 +463,13 @@ public class BasicCRUDLoaderTest extends Assert {
     @UiThreadTest
     public void test12LoaderDistinctAndLimitQuery() {
 
-        CursorLoader loader = new BasicCRUDLoader.Builder(context, mockBasicCRUDLoaderCallback)
+        CursorLoader loader = BasicCRUDLoader.newInstance(context, mockLoaderManager)
                 .forUri(testUri)
                 .distinct()
-                .withLimit(testLimit)
-                .restartLoader(mockLoaderManager, LOADER_ID);
+                .limit(testLimit)
+                .callback(mockBasicCRUDLoaderCallback)
+                .loaderId(LOADER_ID)
+                .restartLoader();
 
         assertNotNull(loader);
 
@@ -484,11 +509,13 @@ public class BasicCRUDLoaderTest extends Assert {
 
         Uri creationUri = testUri.buildUpon().appendQueryParameter("Junk", "Garbage").build();
 
-        CursorLoader loader = new BasicCRUDLoader.Builder(context, mockBasicCRUDLoaderCallback)
+        CursorLoader loader = BasicCRUDLoader.newInstance(context, mockLoaderManager)
                 .forUri(creationUri)
                 .distinct()
-                .withLimit(testLimit)
-                .restartLoader(mockLoaderManager, LOADER_ID);
+                .limit(testLimit)
+                .callback(mockBasicCRUDLoaderCallback)
+                .loaderId(LOADER_ID)
+                .restartLoader();
 
         assertNotNull(loader);
 
@@ -528,13 +555,12 @@ public class BasicCRUDLoaderTest extends Assert {
     public void test14WhereMatchesSelectionConflict() {
         thrown.expect(IllegalStateException.class);
 
-        new BasicCRUDLoader.Builder(context, mockBasicCRUDLoaderCallback)
+        BasicCRUDLoader.newInstance(context, mockLoaderManager)
                 .forUri(testUri)
                 .whereMatchesId(ROW_ID)
 
                         // exception should be thrown here
-                .whereMatchesSelection(testSelection, testSelectionArgs)
-                .initLoader(mockLoaderManager, LOADER_ID);
+                .whereMatchesSelection(testSelection, testSelectionArgs);
     }
 
     /**
@@ -545,13 +571,12 @@ public class BasicCRUDLoaderTest extends Assert {
     public void test15WhereMatchesIdConflict() {
         thrown.expect(IllegalStateException.class);
 
-        new BasicCRUDLoader.Builder(context, mockBasicCRUDLoaderCallback)
+        BasicCRUDLoader.newInstance(context, mockLoaderManager)
                 .forUri(testUri)
                 .whereMatchesSelection(testSelection, testSelectionArgs)
 
                         // exception should be thrown here
-                .whereMatchesId(ROW_ID)
-                .initLoader(mockLoaderManager, LOADER_ID);
+                .whereMatchesId(ROW_ID);
     }
 
     /**
@@ -562,8 +587,10 @@ public class BasicCRUDLoaderTest extends Assert {
     public void test16EnsureUriProvided() {
         thrown.expect(IllegalStateException.class);
 
-        new BasicCRUDLoader.Builder(context, mockBasicCRUDLoaderCallback)
-                .initLoader(mockLoaderManager, LOADER_ID);
+        BasicCRUDLoader.newInstance(context, mockLoaderManager)
+                .callback(mockBasicCRUDLoaderCallback)
+                .loaderId(LOADER_ID)
+                .initLoader();
     }
 
     /**
@@ -574,14 +601,62 @@ public class BasicCRUDLoaderTest extends Assert {
     public void test17EnsureOnlyInitOrRestartCalled() {
         thrown.expect(IllegalStateException.class);
 
-        BasicCRUDLoader.Builder builder = new BasicCRUDLoader.Builder(context, mockBasicCRUDLoaderCallback)
-                .forUri(testUri);
+        BasicCRUDLoader.RequestBuilder builder = BasicCRUDLoader.newInstance(context, mockLoaderManager)
+                .forUri(testUri)
+                .callback(mockBasicCRUDLoaderCallback)
+                .loaderId(LOADER_ID);
 
-        builder.initLoader(mockLoaderManager, LOADER_ID);
+        builder.initLoader();
 
         // should throw exception
-        builder.restartLoader(mockLoaderManager, LOADER_ID);
+        builder.restartLoader();
     }
 
+    /**
+     * Validate exception thrown no uri is provided
+     */
+    @Test
+    @UiThreadTest
+    public void test18EnsureCallbackCalled() {
+        thrown.expect(IllegalStateException.class);
+
+        BasicCRUDLoader.newInstance(context, mockLoaderManager)
+                .forUri(testUri)
+                .loaderId(LOADER_ID)
+
+                // should throw exception because callback not called
+                .initLoader();
+     }
+
+    /**
+     * Basic test to validate a simple cursor loader providing no query parameters and
+     * the default loader id. Must run on the UI thread due to the fact the AsyncLoader
+     * requires the UI thread to create a handler internally.
+     */
+    @Test
+    @UiThreadTest
+    public void test19DefaultLoaderId() {
+
+        CursorLoader loader = BasicCRUDLoader.newInstance(context, mockLoaderManager)
+                .forUri(testUri)
+                .callback(mockBasicCRUDLoaderCallback)
+                .initLoader();
+
+        assertNotNull(loader);
+
+        // Validate expected loader manager methods called
+        assertEquals(BasicCRUDLoader.DEFAULT_LOADER_ID, mockLoaderManager.getLoaderId());
+        assertTrue(mockLoaderManager.isInit());
+        assertFalse(mockLoaderManager.isRestart());
+        assertNotNull(mockLoaderManager.getLoaderCallbacks());
+
+        // Validate loader contains expected data
+        assertEquals(BasicCRUDLoader.DEFAULT_LOADER_ID, loader.getId());
+        assertEquals(testUri, loader.getUri());
+        assertNull(loader.getProjection());
+        assertNull(loader.getSelection());
+        assertNull(loader.getSelectionArgs());
+        assertNull(loader.getSortOrder());
+    }
 }
 
