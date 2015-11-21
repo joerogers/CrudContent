@@ -37,6 +37,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Basic testcase to test the BasicCRUDIntentService features without a real provider. Essentially
@@ -208,6 +209,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
 
         Intent serviceIntent = BasicCRUDIntentService
                 .performUpdate(getContext(), uri)
+                // passing as a String[]
                 .whereMatchesSelection(selection, selectionArgs)
                 .usingValues(new ContentValues())
                 .resultReceiver(new BasicCrudResultReceiver(null) {
@@ -226,7 +228,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
         assertEquals(uri, serviceIntent.getData());
         assertTrue(serviceIntent.hasExtra(EXTRA_VALUES));
         assertEquals(selection, serviceIntent.getStringExtra(EXTRA_SELECTION));
-        assertEquals(selectionArgs, serviceIntent.getStringArrayExtra(EXTRA_SELECTION_ARGS));
+        assertTrue(Arrays.equals(selectionArgs, serviceIntent.getStringArrayExtra(EXTRA_SELECTION_ARGS)));
         assertTrue(serviceIntent.hasExtra(EXTRA_RESULT_RECEIVER));
 
         // Start intent service and delay to allow to run
@@ -280,7 +282,8 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
 
         Intent serviceIntent = BasicCRUDIntentService
                 .performDelete(getContext(), uri)
-                .whereMatchesSelection(selection, selectionArgs)
+                // passing individually, using var args to build string array.
+                .whereMatchesSelection(selection, selectionArgs[0], selectionArgs[1])
                 .resultReceiver(new BasicCrudResultReceiver(null) {
                     @Override
                     protected void onDeleteComplete(int rows) {
@@ -297,7 +300,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
         assertEquals(uri, serviceIntent.getData());
         assertFalse(serviceIntent.hasExtra(EXTRA_VALUES));
         assertEquals(selection, serviceIntent.getStringExtra(EXTRA_SELECTION));
-        assertEquals(selectionArgs, serviceIntent.getStringArrayExtra(EXTRA_SELECTION_ARGS));
+        assertTrue(Arrays.equals(selectionArgs, serviceIntent.getStringArrayExtra(EXTRA_SELECTION_ARGS)));
         assertTrue(serviceIntent.hasExtra(EXTRA_RESULT_RECEIVER));
 
         // Start intent service and delay to allow to run
@@ -324,7 +327,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
         BasicCRUDIntentService
                 .performUpdate(getContext(), uri)
                 .whereMatchesId(1)
-                .whereMatchesSelection("test", null)
+                .whereMatchesSelection("test", (String) null)
                 .start();
     }
 

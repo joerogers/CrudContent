@@ -27,6 +27,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
+import java.util.Arrays;
+
 /**
  * Test to ensure the BasicCRUDLoader creates the proper cursor loader
  */
@@ -143,9 +145,9 @@ public class BasicCRUDLoaderTest extends Assert {
         // Validate loader contains expected data
         assertEquals(LOADER_ID, loader.getId());
         assertEquals(testUri, loader.getUri());
-        assertEquals(testProjection, loader.getProjection());
+        assertTrue(Arrays.equals(testProjection, loader.getProjection()));
         assertEquals(testSelection, loader.getSelection());
-        assertEquals(testSelectionArgs, loader.getSelectionArgs());
+        assertTrue(Arrays.equals(testSelectionArgs, loader.getSelectionArgs()));
         assertEquals(testOrderBy, loader.getSortOrder());
     }
 
@@ -160,7 +162,8 @@ public class BasicCRUDLoaderTest extends Assert {
 
         CursorLoader loader = BasicCRUDLoader.newInstance(context, mockLoaderManager)
                 .forUri(testUri)
-                .selectColumns(testProjection)
+                // Use var args technique
+                .selectColumns(testProjection[0], testProjection[1])
                 .whereMatchesId(ROW_ID)
                 .orderBy(testOrderBy)
                 .callback(mockBasicCRUDLoaderCallback)
@@ -178,7 +181,7 @@ public class BasicCRUDLoaderTest extends Assert {
         // Validate loader contains expected data
         assertEquals(LOADER_ID, loader.getId());
         assertEquals(ContentUris.withAppendedId(testUri, ROW_ID), loader.getUri());
-        assertEquals(testProjection, loader.getProjection());
+        assertTrue(Arrays.equals(testProjection, loader.getProjection()));
         assertNull(loader.getSelection());
         assertNull(loader.getSelectionArgs());
         assertEquals(testOrderBy, loader.getSortOrder());
@@ -259,7 +262,8 @@ public class BasicCRUDLoaderTest extends Assert {
         CursorLoader loader = BasicCRUDLoader.newInstance(context, mockLoaderManager)
                 .forUri(testUri)
                 .selectColumns(testProjection)
-                .whereMatchesSelection(testSelection, testSelectionArgs)
+                // using var args
+                .whereMatchesSelection(testSelection, testSelectionArgs[0])
                 .orderBy(testOrderBy)
                 .callback(mockBasicCRUDLoaderCallback)
                 .loaderId(LOADER_ID)
@@ -276,9 +280,9 @@ public class BasicCRUDLoaderTest extends Assert {
         // Validate loader contains expected data
         assertEquals(LOADER_ID, loader.getId());
         assertEquals(testUri, loader.getUri());
-        assertEquals(testProjection, loader.getProjection());
+        assertTrue(Arrays.equals(testProjection, loader.getProjection()));
         assertEquals(testSelection, loader.getSelection());
-        assertEquals(testSelectionArgs, loader.getSelectionArgs());
+        assertTrue(Arrays.equals(testSelectionArgs, loader.getSelectionArgs()));
         assertEquals(testOrderBy, loader.getSortOrder());
     }
 
@@ -311,7 +315,7 @@ public class BasicCRUDLoaderTest extends Assert {
         // Validate loader contains expected data
         assertEquals(LOADER_ID, loader.getId());
         assertEquals(ContentUris.withAppendedId(testUri, ROW_ID), loader.getUri());
-        assertEquals(testProjection, loader.getProjection());
+        assertTrue(Arrays.equals(testProjection, loader.getProjection()));
         assertNull(loader.getSelection());
         assertNull(loader.getSelectionArgs());
         assertEquals(testOrderBy, loader.getSortOrder());
