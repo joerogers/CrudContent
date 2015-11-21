@@ -24,6 +24,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.ResultReceiver;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.forkingcode.crudcontent.BuildConfig;
 
@@ -248,11 +249,14 @@ public class BasicCRUDIntentService extends IntentService {
          * method will have no effect on the operation as the selection will be ignored.
          *
          * @param selection     The selection clause for the update or delete
-         * @param selectionArgs Optional arguments to bind to the selection. Note, best practice
-         *                      is to use binding to avoid sql injection.
+         * @param selectionArgs You may include ?s in selection, which will be replaced by
+         *                      the values from selectionArgs, in order that they appear in the selection.
+         *                      The values will be bound as Strings. May pass a String[] or comma separated
+         *                      strings for each argument. Passing null means nothing in the selection needs
+         *                      to be replaced.
          * @return this intent builder
          */
-        public IntentBuilder whereMatchesSelection(String selection, String[] selectionArgs) {
+        public IntentBuilder whereMatchesSelection(@NonNull String selection, @Nullable String... selectionArgs) {
             if (id != -1) {
                 throw new IllegalStateException("Only call one of whereMatchesId and whereMatchesSelection");
             }

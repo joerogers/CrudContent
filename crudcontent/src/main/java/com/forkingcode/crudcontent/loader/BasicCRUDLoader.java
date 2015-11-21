@@ -273,12 +273,12 @@ public class BasicCRUDLoader implements LoaderManager.LoaderCallbacks<Cursor> {
          * Optionally provide a the set of columns to query from the table. If this is not
          * called, then all columns will be returned
          *
-         * @param projection The list of columns to put into the cursor. If
-         *                   {@code null} all columns are included.
+         * @param projection The list of columns to put into the cursor. Either pass a String[] or
+         *                   a variable list of Strings representing column names.
          * @return This builder object
          */
         @NonNull
-        public RequestBuilder selectColumns(@Nullable String[] projection) {
+        public RequestBuilder selectColumns(@NonNull String... projection) {
             args.putStringArray(ARG_PROJECTION, projection);
             return this;
         }
@@ -321,16 +321,17 @@ public class BasicCRUDLoader implements LoaderManager.LoaderCallbacks<Cursor> {
          * all rows will be returned unless whereMatchesRowId was called instead.
          *
          * @param selection     A selection criteria to apply when filtering rows.
-         *                      If {@code null} then all rows are included.
          * @param selectionArgs You may include ?s in selection, which will be replaced by
          *                      the values from selectionArgs, in order that they appear in the selection.
-         *                      The values will be bound as Strings.
+         *                      The values will be bound as Strings. May pass a String[] or comma separated
+         *                      strings for each argument. Passing null means nothing in the selection needs
+         *                      to be replaced.
          * @return This builder object
          * @throws IllegalStateException If you already called whereMatchesRowId as only the rowId
          *                               or a specific selection should be provided.
          */
-        public RequestBuilder whereMatchesSelection(@Nullable String selection, @Nullable String[] selectionArgs) {
-            if (rowId > 0 && selection != null) {
+        public RequestBuilder whereMatchesSelection(@NonNull String selection, @Nullable String... selectionArgs) {
+            if (rowId > 0) {
                 throw new IllegalStateException("Do not provide both a row id and a selection");
             }
             args.putString(ARG_SELECTION, selection);

@@ -43,7 +43,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Basic CRUD (Create, Read, Update, Delete) provider for. Assumes basic
+ * Basic CRUD (Create, Read, Update, Delete) provider. Assumes basic
  * matching of either all rows, or by id for tables matching a specific uri pattern.
  *
  * <p>The provider uses transactions for insert, update and deletes to provide optimal performance
