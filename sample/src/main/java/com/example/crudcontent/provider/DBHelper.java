@@ -69,7 +69,9 @@ public class DBHelper extends SQLiteOpenHelper {
         // The BasicCRUDProvider will create non-exclusive mode transactions automatically
         // as required by
         // http://developer.android.com/reference/android/database/sqlite/SQLiteDatabase.html#enableWriteAheadLogging()
-        setWriteAheadLoggingEnabled(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            setWriteAheadLoggingEnabled(true);
+        }
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -82,6 +84,8 @@ public class DBHelper extends SQLiteOpenHelper {
         //
         // Note: if you do add a foreign key, you should also create an index for
         // each one as it should help with performance.
+        //
+        // If you don't use foreign keys, you do not need this method.
         db.setForeignKeyConstraintsEnabled(true);
     }
 

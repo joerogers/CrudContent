@@ -690,9 +690,7 @@ public abstract class BasicCRUDProvider extends ContentProvider {
             case CONFLICT_REPLACE:
                 return algorithm;
             default:
-                if (LOGGING_ENABLED) {
-                    Log.w(TAG, "Unexpected conflict algorithm provided: " + algorithm);
-                }
+                Log.w(TAG, "Using conflict replace, ignoring unexpected conflict algorithm: " + algorithm);
                 return CONFLICT_REPLACE;
         }
     }
