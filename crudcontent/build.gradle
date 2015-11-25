@@ -1,11 +1,11 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    compileSdkVersion rootProject.compileSdkVersion
+    buildToolsVersion rootProject.buildToolsVersion
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 23
+        minSdkVersion rootProject.minSdkVersion
+        targetSdkVersion rootProject.compileSdkVersion
         versionCode 1
         versionName "1.0"
     }
@@ -21,14 +21,14 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:support-annotations:23.1.1'
-    compile 'com.android.support:support-v4:23.1.1'
+    compile "com.android.support:support-annotations:${rootProject.supportLibVersion}"
+    compile "com.android.support:support-v4:${rootProject.supportLibVersion}"
 }
 
 ext {
     libraryName = 'crudcontent'
     libraryDescription = 'Library providing a content provider to access simple SQLite databases'
-    libraryVersion = project.libraryVersion
+    libraryVersion = rootProject.libraryVersion
     bintrayDryRun = isDryRun()
 }
 

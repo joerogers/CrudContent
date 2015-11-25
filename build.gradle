@@ -20,6 +20,15 @@ allprojects {
     }
 }
 
+// Global properties for all projects
+ext {
+    buildToolsVersion = "23.0.2"
+    compileSdkVersion = 23
+    minSdkVersion = 15
+    supportLibVersion = "23.1.1"
+    testLibVersion = "0.4.1"
+}
+
 def isDryRun() {
     if (project.hasProperty('dryRun')) {
         return project.dryRun.toBoolean()
