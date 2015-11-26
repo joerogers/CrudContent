@@ -1,25 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="72dp"
-              android:paddingLeft="16dp"
-              android:paddingRight="16dp"
-              android:paddingTop="16dp"
-              android:orientation="vertical">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools">
 
-    <TextView
-        android:id="@+id/city_name"
-        android:layout_height="wrap_content"
+    <!--suppress AndroidUnknownAttribute -->
+    <data class="CityListItemBinding">
+
+        <variable
+            name="cityItem"
+            type="com.example.crudcontent.adapter.CityAdapter.ItemData"/>
+    </data>
+
+    <LinearLayout
+        android:id="@+id/listItem"
         android:layout_width="match_parent"
-        android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-        tools:text="San Antonio"/>
+        android:layout_height="72dp"
+        android:orientation="vertical"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingTop="16dp">
 
-    <TextView
-        android:id="@+id/date_visited"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-        tools:text="March 1, 2010"/>
+        <TextView
+            android:id="@+id/cityName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+            android:text="@{@string/city_state(cityItem.city, cityItem.state)}"
+            tools:text="San Antonio"/>
 
-</LinearLayout>
+        <TextView
+            android:id="@+id/dateVisited"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            android:text="@{cityItem.date}"
+            tools:text="March 1, 2010"/>
+
+    </LinearLayout>
+</layout>

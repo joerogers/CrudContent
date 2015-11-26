@@ -17,6 +17,8 @@
     <string name="notes_hint">Notes</string>
     <string name="submit_button">Submit</string>
 
+    <string name="city_state">%1$s, %2$s</string>
+
     <string-array name="sort_types">
         <item>By Date</item>
         <item>By Name</item>

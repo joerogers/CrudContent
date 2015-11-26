@@ -18,15 +18,15 @@ package com.example.crudcontent.adapter;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.text.TextUtils;
+import android.databinding.DataBindingUtil;
+import android.databinding.ObservableField;
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
-import android.widget.TextView;
 
-import com.example.crudcontent.R;
+import com.example.crudcontent.databinding.CityListItemBinding;
 import com.example.crudcontent.provider.CityContract;
 
 import java.util.Date;
@@ -55,33 +55,33 @@ public class CityAdapter extends CursorAdapter {
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
         // Unless you are supporting different types of views, just return a view here.
         // This is called from getView when the convert view is null
-        View view = LayoutInflater.from(context).inflate(R.layout.adapter_item_city, parent, false);
-        view.setTag(new ViewHolder(view));
-        return view;
+        CityListItemBinding binding = CityListItemBinding.inflate(LayoutInflater.from(context), parent, false);
+        binding.setCityItem(new ItemData());
+        return binding.getRoot();
     }
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
         // cursor already in position
-        ViewHolder holder = (ViewHolder) view.getTag();
-        StringBuilder builder = new StringBuilder(cursor.getString(NAME_POS));
-        String state = cursor.getString(STATE_POS);
-        if (!TextUtils.isEmpty(state)) {
-            builder.append(", ").append(state);
-        }
-        holder.cityName.setText(builder.toString());
+        CityListItemBinding binding = DataBindingUtil.getBinding(view);
+        if (binding == null) return;
 
-        Date date = new Date(cursor.getLong(DATE_POS));
-        holder.dateVisited.setText(DateFormat.getMediumDateFormat(context).format(date));
+        ItemData data = binding.getCityItem();
+        data.updateData(cursor, view.getContext());
+        // bind immediately vs waiting until next frame to avoid extra layout pass
+        binding.executePendingBindings();
     }
 
-    /* package */ static class ViewHolder {
-        final TextView cityName;
-        final TextView dateVisited;
+    public static class ItemData {
+        public final ObservableField<String> city = new ObservableField<>();
+        public final ObservableField<String> state = new ObservableField<>();
+        public final ObservableField<String> date = new ObservableField<>();
 
-        ViewHolder(View view) {
-            cityName = (TextView) view.findViewById(R.id.city_name);
-            dateVisited = (TextView) view.findViewById(R.id.date_visited);
+        /* package */ void updateData(Cursor cursor, Context context) {
+            city.set(cursor.getString(NAME_POS));
+            state.set(cursor.getString(STATE_POS));
+            Date dateObj = new Date(cursor.getLong(DATE_POS));
+            date.set(DateFormat.getMediumDateFormat(context).format(dateObj));
         }
     }
 }
