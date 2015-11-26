@@ -16,6 +16,7 @@
 
 package com.example.crudcontent.activity;
 
+import android.annotation.SuppressLint;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.os.Handler;
@@ -88,8 +89,8 @@ public class CityActivity extends AppCompatActivity
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         binding = null;
+        super.onDestroy();
     }
 
     @Override
@@ -120,6 +121,7 @@ public class CityActivity extends AppCompatActivity
      * a weak reference as the the database operations are asynchronous and do not want to hold
      * a strong reference to the activity in case it is ended before the service returns
      */
+    @SuppressLint("ParcelCreator")  // Using the ResultReceiver parceling...
     public static class StatesCreatedResultReceiver extends BasicCrudResultReceiver {
 
         // saving the reference to the city activity. A weak reference allows the garbage

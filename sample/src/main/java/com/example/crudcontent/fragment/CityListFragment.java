@@ -35,6 +35,8 @@ import com.example.crudcontent.provider.CityContract;
 import com.example.crudcontent.provider.LoaderIds;
 import com.forkingcode.crudcontent.loader.BasicCRUDLoader;
 
+import java.lang.ref.WeakReference;
+
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -211,11 +213,26 @@ public class CityListFragment extends Fragment
                 .setDuration(animationDuration)
                 .setListener(null)
                 .withLayer()
-                .withEndAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        fadeOutView.setVisibility(View.GONE);
-                    }
-                });
+                .withEndAction(new FadeOutEndAction(fadeOutView));
+    }
+
+    /**
+     * The end action is not cleared on some older releases, use a weak ref to allow
+     * the activity/fragment and views to get destroyed.
+     */
+    static class FadeOutEndAction implements Runnable {
+        private final WeakReference<View> viewRef;
+        FadeOutEndAction(View view) {
+            viewRef = new WeakReference<>(view);
+        }
+
+        @Override
+        public void run() {
+            View view = viewRef.get();
+            if (view != null) {
+                view.setVisibility(View.GONE);
+                view.animate().setListener(null);
+            }
+        }
     }
 }

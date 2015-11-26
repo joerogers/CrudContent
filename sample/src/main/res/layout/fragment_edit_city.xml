@@ -34,11 +34,12 @@
                 android:hint="@string/city_hint"
                 app:hintAnimationEnabled="false">
 
+                <!-- using textNoSuggestions in sample to eliminate OS level leak for testing -->
                 <EditText
                     android:id="@+id/cityView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textCapWords"
+                    android:inputType="textCapWords|textNoSuggestions"
                     android:maxLines="1"
                     android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                     tools:text="Seattle"/>
@@ -74,6 +75,7 @@
                 android:hint="@string/date_visited_hint"
                 app:hintAnimationEnabled="false">
 
+                <!-- using textNoSuggestions in sample to eliminate OS level leak for testing -->
                 <EditText
                     android:id="@+id/dateVisited"
                     android:layout_width="100dp"
@@ -82,7 +84,7 @@
                     android:cursorVisible="false"
                     android:focusableInTouchMode="false"
                     android:gravity="center_vertical"
-                    android:inputType="date"
+                    android:inputType="date|textNoSuggestions"
                     android:onClick="@{listeners.onDateVisitedClick}"
                     android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                     tools:text="5/1/2000"/>
@@ -96,12 +98,13 @@
                 android:hint="@string/notes_hint"
                 app:hintAnimationEnabled="false">
 
+                <!-- using textNoSuggestions in sample to eliminate OS level leak for testing -->
                 <EditText
                     android:id="@+id/notesView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:inputType="textCapSentences|textAutoComplete"
+                    android:inputType="textCapSentences|textAutoComplete|textNoSuggestions"
                     android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
             </android.support.design.widget.TextInputLayout>
 
