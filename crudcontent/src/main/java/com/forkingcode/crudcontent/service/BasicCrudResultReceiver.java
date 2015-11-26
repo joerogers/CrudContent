@@ -16,6 +16,7 @@
 
 package com.forkingcode.crudcontent.service;
 
+import android.annotation.SuppressLint;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -38,6 +39,7 @@ import android.os.ResultReceiver;
  * @see java.lang.ref.WeakReference
  * @see <a href="https://developer.android.com/reference/android/support/v4/content/LocalBroadcastManager.html">LocalBroadcastReceiver</a>
  */
+@SuppressLint("ParcelCreator")
 public class BasicCrudResultReceiver extends ResultReceiver {
 
     /* package */ static final int ACTION_INSERT_COMPLETE = 1;
@@ -49,11 +51,11 @@ public class BasicCrudResultReceiver extends ResultReceiver {
 
     /**
      * Constructor
-     * @param handler Your
-     * {@link #onInsertComplete(Uri)}, {@link #onBulkInsertComplete(int)},
-     * {@link #onUpdateComplete(int)}, or {@link #onDeleteComplete(int)}
-     * method will be called from the thread running
-     * <var>handler</var> if given, or from an arbitrary thread if null.
+     *
+     * @param handler {@link #onInsertComplete(Uri)}, {@link #onBulkInsertComplete(int)},
+     *                {@link #onUpdateComplete(int)}, or {@link #onDeleteComplete(int)}
+     *                will be called from the thread running
+     *                <var>handler</var> if given, or from an arbitrary thread if null.
      */
     public BasicCrudResultReceiver(Handler handler) {
         super(handler);
@@ -75,6 +77,7 @@ public class BasicCrudResultReceiver extends ResultReceiver {
 
     /**
      * Parses the result and calls the appropriate callback.
+     *
      * @param resultCode code indicating type of result being sent
      * @param resultData bundle containing the values of the result.
      */
@@ -99,6 +102,7 @@ public class BasicCrudResultReceiver extends ResultReceiver {
 
     /**
      * Called for insert operations.
+     *
      * @param uri The URI of the specific row that was inserted, null if insertion failed
      */
     @SuppressWarnings("UnusedParameters")
@@ -108,6 +112,7 @@ public class BasicCrudResultReceiver extends ResultReceiver {
 
     /**
      * Called for bulk insert operations.
+     *
      * @param rows The number of rows successfully inserted.
      */
     @SuppressWarnings("UnusedParameters")
@@ -117,6 +122,7 @@ public class BasicCrudResultReceiver extends ResultReceiver {
 
     /**
      * Called for bulk insert operations.
+     *
      * @param rows The number of rows successfully updated.
      */
     @SuppressWarnings("UnusedParameters")
@@ -126,6 +132,7 @@ public class BasicCrudResultReceiver extends ResultReceiver {
 
     /**
      * Called for bulk insert operations.
+     *
      * @param rows The number of rows successfully deleted.
      */
     @SuppressWarnings("UnusedParameters")
