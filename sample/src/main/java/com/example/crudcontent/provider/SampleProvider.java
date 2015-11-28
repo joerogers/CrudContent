@@ -36,6 +36,8 @@ public class SampleProvider extends BasicCRUDProvider {
     @NonNull
     @Override
     protected SQLiteOpenHelper getDbHelper() {
+        // A singleton is handy if the helper is able to be accessed outside of the provider. However
+        // if only the provider accesses the helper, you can instantiate a new instance here instead.
         return DBHelper.getInstance(getContext());
     }
 
