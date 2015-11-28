@@ -7,8 +7,8 @@ Gradle
 
 ```
 dependencies {
-    com.forkingcode.crudcontent:crudcontent:0.9.1'
+    com.forkingcode.crudcontent:crudcontent:{latest version above}'
 }
 ```
 
-Version 0.9.1  Service Intent API changing, Service result changing
+See [Wiki](https://github.com/joerogers/CrudContent/wiki) for usage instructions
