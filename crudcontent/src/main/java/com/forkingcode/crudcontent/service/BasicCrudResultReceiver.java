@@ -47,13 +47,14 @@ public class BasicCrudResultReceiver extends ResultReceiver {
     /* package */ static final int ACTION_UPDATE_COMPLETE = 3;
     /* package */ static final int ACTION_DELETE_COMPLETE = 4;
 
-    private static final String EXTRA_DATA = "BasicCrudResultReceiver.extra.data";
+    private static final String EXTRA_RESULT = "BasicCrudResultReceiver.extra.result";
+    private static final String EXTRA_REQUEST_ID = "BasicCrudResultReceiver.extra.requestId";
 
     /**
      * Constructor
      *
-     * @param handler {@link #onInsertComplete(Uri)}, {@link #onBulkInsertComplete(int)},
-     *                {@link #onUpdateComplete(int)}, or {@link #onDeleteComplete(int)}
+     * @param handler {@link #onInsertComplete(int, Uri)}, {@link #onBulkInsertComplete(int, int)},
+     *                {@link #onUpdateComplete(int, int)}, or {@link #onDeleteComplete(int, int)}
      *                will be called from the thread running
      *                <var>handler</var> if given, or from an arbitrary thread if null.
      */
@@ -62,16 +63,18 @@ public class BasicCrudResultReceiver extends ResultReceiver {
     }
 
     /* package */
-    static void sendInsertComplete(ResultReceiver resultReceiver, Uri uri) {
+    static void sendInsertComplete(ResultReceiver resultReceiver, int requestId, Uri uri) {
         Bundle resultData = new Bundle();
-        resultData.putParcelable(EXTRA_DATA, uri);
+        resultData.putParcelable(EXTRA_RESULT, uri);
+        resultData.putInt(EXTRA_REQUEST_ID, requestId);
         resultReceiver.send(ACTION_INSERT_COMPLETE, resultData);
     }
 
     /* package */
-    static void sendRowCount(ResultReceiver resultReceiver, int resultCode, int rowCount) {
+    static void sendRowCount(ResultReceiver resultReceiver, int resultCode, int requestId, int rowCount) {
         Bundle resultData = new Bundle();
-        resultData.putInt(EXTRA_DATA, rowCount);
+        resultData.putInt(EXTRA_RESULT, rowCount);
+        resultData.putInt(EXTRA_REQUEST_ID, requestId);
         resultReceiver.send(resultCode, resultData);
     }
 
@@ -83,19 +86,21 @@ public class BasicCrudResultReceiver extends ResultReceiver {
      */
     @Override
     protected final void onReceiveResult(int resultCode, Bundle resultData) {
+        int requestId = resultData.getInt(EXTRA_REQUEST_ID, 0);
+
         switch (resultCode) {
             case ACTION_INSERT_COMPLETE:
-                Uri uri = resultData.getParcelable(EXTRA_DATA);
-                onInsertComplete(uri);
+                Uri uri = resultData.getParcelable(EXTRA_RESULT);
+                onInsertComplete(requestId, uri);
                 break;
             case ACTION_BULK_INSERT_COMPLETE:
-                onBulkInsertComplete(resultData.getInt(EXTRA_DATA, 0));
+                onBulkInsertComplete(requestId, resultData.getInt(EXTRA_RESULT, 0));
                 break;
             case ACTION_UPDATE_COMPLETE:
-                onUpdateComplete(resultData.getInt(EXTRA_DATA, 0));
+                onUpdateComplete(requestId, resultData.getInt(EXTRA_RESULT, 0));
                 break;
             case ACTION_DELETE_COMPLETE:
-                onDeleteComplete(resultData.getInt(EXTRA_DATA, 0));
+                onDeleteComplete(requestId, resultData.getInt(EXTRA_RESULT, 0));
                 break;
         }
     }
@@ -103,40 +108,44 @@ public class BasicCrudResultReceiver extends ResultReceiver {
     /**
      * Called for insert operations.
      *
+     * @param requestId The request id associated with the receiver
      * @param uri The URI of the specific row that was inserted, null if insertion failed
      */
     @SuppressWarnings("UnusedParameters")
-    protected void onInsertComplete(Uri uri) {
+    protected void onInsertComplete(int requestId, Uri uri) {
 
     }
 
     /**
      * Called for bulk insert operations.
      *
+     * @param requestId The request id associated with the receiver
      * @param rows The number of rows successfully inserted.
      */
     @SuppressWarnings("UnusedParameters")
-    protected void onBulkInsertComplete(int rows) {
+    protected void onBulkInsertComplete(int requestId, int rows) {
 
     }
 
     /**
-     * Called for bulk insert operations.
+     * Called for update operations.
      *
+     * @param requestId The request id associated with the receiver
      * @param rows The number of rows successfully updated.
      */
     @SuppressWarnings("UnusedParameters")
-    protected void onUpdateComplete(int rows) {
+    protected void onUpdateComplete(int requestId, int rows) {
 
     }
 
     /**
-     * Called for bulk insert operations.
+     * Called for delete operations.
      *
+     * @param requestId The request id associated with the receiver
      * @param rows The number of rows successfully deleted.
      */
     @SuppressWarnings("UnusedParameters")
-    protected void onDeleteComplete(int rows) {
+    protected void onDeleteComplete(int requestId, int rows) {
 
     }
 }

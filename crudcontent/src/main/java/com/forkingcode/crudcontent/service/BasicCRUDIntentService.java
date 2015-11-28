@@ -50,6 +50,7 @@ public class BasicCRUDIntentService extends IntentService {
     private static final String EXTRA_SELECTION = BuildConfig.APPLICATION_ID + ".BasicCRUDIntentService.extra.selection";
     private static final String EXTRA_SELECTION_ARGS = BuildConfig.APPLICATION_ID + ".BasicCRUDIntentService.extra.selectionArgs";
     private static final String EXTRA_RESULT_RECEIVER = BuildConfig.APPLICATION_ID + ".BasicCRUDIntentService.extra.resultReceiver";
+    private static final String EXTRA_REQUEST_ID = BuildConfig.APPLICATION_ID + ".BasicCRUDIntentService.extra.requestId";
 
 
     public BasicCRUDIntentService() {
@@ -107,7 +108,8 @@ public class BasicCRUDIntentService extends IntentService {
         Uri insertedUri = getContentResolver().insert(uri, values.get(0));
         ResultReceiver resultReceiver = intent.getParcelableExtra(EXTRA_RESULT_RECEIVER);
         if (resultReceiver != null) {
-            BasicCrudResultReceiver.sendInsertComplete(resultReceiver, insertedUri);
+            int requestId = intent.getIntExtra(EXTRA_REQUEST_ID, 0);
+            BasicCrudResultReceiver.sendInsertComplete(resultReceiver, requestId, insertedUri);
         }
     }
 
@@ -140,7 +142,8 @@ public class BasicCRUDIntentService extends IntentService {
     private static void sendRowCountResult(Intent intent, int action, int rowCount) {
         ResultReceiver resultReceiver = intent.getParcelableExtra(EXTRA_RESULT_RECEIVER);
         if (resultReceiver != null) {
-            BasicCrudResultReceiver.sendRowCount(resultReceiver, action, rowCount);
+            int requestId = intent.getIntExtra(EXTRA_REQUEST_ID, 0);
+            BasicCrudResultReceiver.sendRowCount(resultReceiver, action, requestId, rowCount);
         }
     }
 
@@ -163,7 +166,7 @@ public class BasicCRUDIntentService extends IntentService {
      * operation may be provided per Intent
      *
      * @param context The context used to build the intent
-     * @param uri The URI for the provider/table you wish to insert data
+     * @param uri     The URI for the provider/table you wish to insert data
      * @return this intent builder
      */
     public static IntentBuilder performBulkInsert(@NonNull Context context, @NonNull Uri uri) {
@@ -178,7 +181,7 @@ public class BasicCRUDIntentService extends IntentService {
      * operation may be provided per Intent
      *
      * @param context The context used to build the intent
-     * @param uri The URI for the provider/table you wish to update
+     * @param uri     The URI for the provider/table you wish to update
      * @return this intent builder
      */
     public static IntentBuilder performUpdate(@NonNull Context context, @NonNull Uri uri) {
@@ -192,7 +195,7 @@ public class BasicCRUDIntentService extends IntentService {
      * operation may be provided per Intent
      *
      * @param context The context used to build the intent
-     * @param uri The URI for the provider/table you wish to delete from
+     * @param uri     The URI for the provider/table you wish to delete from
      * @return this intent builder
      */
     public static IntentBuilder performDelete(@NonNull Context context, @NonNull Uri uri) {
@@ -210,6 +213,7 @@ public class BasicCRUDIntentService extends IntentService {
         private final Context context;
         private ArrayList<ContentValues> contentValuesList;
         private long id = -1;
+        private int requestId = 0;
         private boolean isBulkOperation = false;
         private boolean isDeleteOperation = false;
 
@@ -271,7 +275,7 @@ public class BasicCRUDIntentService extends IntentService {
          * @param values The content values indicating the columns/value pairs for the operation
          * @return this intent builder
          * @throws IllegalStateException if providing values for a delete operation, or providing multiple row
-         * for a plain insert/update operation
+         *                               for a plain insert/update operation
          */
         public IntentBuilder usingValues(@NonNull ContentValues values) {
             ArrayList<ContentValues> valuesList = new ArrayList<>(1);
@@ -285,7 +289,7 @@ public class BasicCRUDIntentService extends IntentService {
          * @param values The content values array indicating the columns/value pairs for the operation
          * @return this intent builder
          * @throws IllegalStateException if providing values for a delete operation, or providing multiple row
-         * for a plain insert/update operation
+         *                               for a plain insert/update operation
          */
         public IntentBuilder usingValues(@NonNull ContentValues[] values) {
             ArrayList<ContentValues> valuesList = new ArrayList<>(values.length);
@@ -299,7 +303,7 @@ public class BasicCRUDIntentService extends IntentService {
          * @param values The content values array indicating the columns/value pairs for the operation
          * @return this intent builder
          * @throws IllegalStateException if providing values for a delete operation, or providing multiple row
-         * for a plain insert/update operation
+         *                               for a plain insert/update operation
          */
         public IntentBuilder usingValues(@NonNull ArrayList<ContentValues> values) {
             if (isDeleteOperation) {
@@ -317,18 +321,23 @@ public class BasicCRUDIntentService extends IntentService {
          * for the result of the operation.
          *
          * @param resultReceiver The result receiver to use for callbacks
+         * @param requestId      If using the same receiver for multiple requests, provide
+         *                       an id that to associate with the request. This will by passed
+         *                       back via the result receiver callbacks
          * @return this intent builder
          * @see BasicCrudResultReceiver
          */
-        public IntentBuilder resultReceiver(@NonNull BasicCrudResultReceiver resultReceiver) {
+        public IntentBuilder resultReceiver(int requestId, @NonNull BasicCrudResultReceiver resultReceiver) {
+            intent.putExtra(EXTRA_REQUEST_ID, requestId);
             intent.putExtra(EXTRA_RESULT_RECEIVER, resultReceiver);
             return this;
         }
 
         /**
          * Build the intent and start the service. The options provided will be validated
+         *
          * @throws IllegalStateException If the content values were not provided for
-         * insert, bulk insert, or update.
+         *                               insert, bulk insert, or update.
          */
         public void start() {
             context.startService(buildIntent());
@@ -338,9 +347,9 @@ public class BasicCRUDIntentService extends IntentService {
          * Build and validate the intent.
          *
          * @return The new intent to use to invoke the BasicCRUDIntentService
-         * @see BasicCRUDIntentService
          * @throws IllegalStateException If the content values were not provided for
-         * insert, bulk insert, or update.
+         *                               insert, bulk insert, or update.
+         * @see BasicCRUDIntentService
          */
         public Intent buildIntent() {
             if (contentValuesList != null && !contentValuesList.isEmpty()) {

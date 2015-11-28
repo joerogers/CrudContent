@@ -64,6 +64,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
 
     private static final String AUTHORITY = "test";
     private static final String TABLE = "my_table";
+    private static final int REQUEST_ID = 4;
 
     private final Uri uri;
 
@@ -97,13 +98,14 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
                 .usingValues(new ContentValues())
 
                         // Receiver is called by intent service to indicate status of the insert
-                .resultReceiver(new BasicCrudResultReceiver(null) {
+                .resultReceiver(REQUEST_ID, new BasicCrudResultReceiver(null) {
                     @Override
-                    protected void onInsertComplete(Uri insertResultUri) {
+                    protected void onInsertComplete(int requestId, Uri insertResultUri) {
                         assertNotNull("Row failed to insert", insertResultUri);
                         assertEquals(uri.getAuthority(), insertResultUri.getAuthority());
                         long id = ContentUris.parseId(insertResultUri);
                         assertEquals("Invalid id", ServiceMockContentProvider.INSERT_ID_RESULT, id);
+                        assertEquals("Request id", REQUEST_ID, requestId);
                         // indicate receiver was called and successful
                         success = true;
                     }
@@ -138,10 +140,11 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
         Intent serviceIntent = BasicCRUDIntentService
                 .performBulkInsert(getContext(), uri)
                 .usingValues(valuesArray)
-                .resultReceiver(new BasicCrudResultReceiver(null) {
+                .resultReceiver(REQUEST_ID, new BasicCrudResultReceiver(null) {
                     @Override
-                    protected void onBulkInsertComplete(int rows) {
+                    protected void onBulkInsertComplete(int requestId, int rows) {
                         assertEquals(ServiceMockContentProvider.BULK_INSERT_RESULT, rows);
+                        assertEquals("Request id", REQUEST_ID, requestId);
                         // indicate receiver was called and successful
                         success = true;
                     }
@@ -174,10 +177,11 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
                 .performUpdate(getContext(), uri)
                 .whereMatchesId(id)
                 .usingValues(new ContentValues())
-                .resultReceiver(new BasicCrudResultReceiver(null) {
+                .resultReceiver(REQUEST_ID, new BasicCrudResultReceiver(null) {
                     @Override
-                    protected void onUpdateComplete(int rows) {
+                    protected void onUpdateComplete(int requestId, int rows) {
                         assertEquals(ServiceMockContentProvider.UPDATE_RESULT, rows);
+                        assertEquals("Request id", REQUEST_ID, requestId);
                         // indicate receiver was called and successful
                         success = true;
                     }
@@ -212,10 +216,12 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
                 // passing as a String[]
                 .whereMatchesSelection(selection, selectionArgs)
                 .usingValues(new ContentValues())
-                .resultReceiver(new BasicCrudResultReceiver(null) {
+                .resultReceiver(REQUEST_ID, new BasicCrudResultReceiver(null) {
                     @Override
-                    protected void onUpdateComplete(int rows) {
+                    protected void onUpdateComplete(int requestId, int rows) {
                         assertEquals(ServiceMockContentProvider.UPDATE_RESULT, rows);
+                        // If request id not provided, 0 i
+                        assertEquals("Request id", REQUEST_ID, requestId);
                         // indicate receiver was called and successful
                         success = true;
                     }
@@ -247,10 +253,11 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
         Intent serviceIntent = BasicCRUDIntentService
                 .performDelete(getContext(), uri)
                 .whereMatchesId(id)
-                .resultReceiver(new BasicCrudResultReceiver(null) {
+                .resultReceiver(REQUEST_ID, new BasicCrudResultReceiver(null) {
                     @Override
-                    protected void onDeleteComplete(int rows) {
+                    protected void onDeleteComplete(int requestId, int rows) {
                         assertEquals(ServiceMockContentProvider.DELETE_RESULT, rows);
+                        assertEquals("Request id", REQUEST_ID, requestId);
                         // indicate receiver was called and successful
                         success = true;
                     }
@@ -284,10 +291,11 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
                 .performDelete(getContext(), uri)
                 // passing individually, using var args to build string array.
                 .whereMatchesSelection(selection, selectionArgs[0], selectionArgs[1])
-                .resultReceiver(new BasicCrudResultReceiver(null) {
+                .resultReceiver(REQUEST_ID, new BasicCrudResultReceiver(null) {
                     @Override
-                    protected void onDeleteComplete(int rows) {
+                    protected void onDeleteComplete(int requestId, int rows) {
                         assertEquals(ServiceMockContentProvider.DELETE_RESULT, rows);
+                        assertEquals("Request id", REQUEST_ID, requestId);
                         // indicate receiver was called and successful
                         success = true;
                     }

@@ -42,6 +42,7 @@ public class CityActivity extends AppCompatActivity
         implements CityListFragment.CityListFragmentListener {
 
     private static final String STATE_SORT_ORDER = "sortOrder";
+    private static final int STATE_REQUEST_ID = 100;
 
     private static boolean createdStates = false;
     private CityActivityBinding binding;
@@ -70,7 +71,7 @@ public class CityActivity extends AppCompatActivity
             BasicCRUDIntentService
                     .performBulkInsert(this, StateContract.URI)
                     .usingValues(StateContract.buildStateValuesArray())
-                    .resultReceiver(new StatesCreatedResultReceiver(this))
+                    .resultReceiver(STATE_REQUEST_ID, new StatesCreatedResultReceiver(this))
                     .start();
         }
 
@@ -134,7 +135,7 @@ public class CityActivity extends AppCompatActivity
         }
 
         @Override
-        protected void onBulkInsertComplete(int rows) {
+        protected void onBulkInsertComplete(int requestId, int rows) {
             // Just marking it was complete. Because sample uses IGNORE conflict
             // resolution rows may be 0 if states were added during a previous run
             // of the application
