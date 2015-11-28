@@ -49,7 +49,7 @@ import java.util.Date;
  */
 public class EditCityFragment extends Fragment
         implements Handler.Callback,
-        BasicCRUDLoader.BasicCRUDLoaderCallback,
+        BasicCRUDLoader.Callback,
         DatePickerDialogFragment.DatePickerDialogFragmentListener {
 
     private static final String STATE_CITY = "EditCityFragment.city";

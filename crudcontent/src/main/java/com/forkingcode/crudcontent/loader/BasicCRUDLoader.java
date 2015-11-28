@@ -36,7 +36,7 @@ import com.forkingcode.crudcontent.provider.BasicCRUDProvider;
  */
 public class BasicCRUDLoader implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    public interface BasicCRUDLoaderCallback {
+    public interface Callback {
 
         /**
          * Called when a loader query has finished its load.  Note
@@ -100,9 +100,9 @@ public class BasicCRUDLoader implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static boolean DEBUG = false;
     private final Context context;
-    private final BasicCRUDLoaderCallback loaderCallback;
+    private final Callback loaderCallback;
 
-    private BasicCRUDLoader(Context context, BasicCRUDLoaderCallback loaderCallback) {
+    private BasicCRUDLoader(Context context, Callback loaderCallback) {
         this.context = context.getApplicationContext();
         this.loaderCallback = loaderCallback;
     }
@@ -213,7 +213,7 @@ public class BasicCRUDLoader implements LoaderManager.LoaderCallbacks<Cursor> {
         private final Context context;
         private final LoaderManager loaderManager;
         private final Bundle args = new Bundle();
-        private BasicCRUDLoaderCallback loaderCallback;
+        private Callback loaderCallback;
         private BasicCRUDLoader basicCRUDLoader;
         private boolean distinct = false;
         private String limit = null;
@@ -252,7 +252,7 @@ public class BasicCRUDLoader implements LoaderManager.LoaderCallbacks<Cursor> {
          * @return This builder object
          */
         @NonNull
-        public RequestBuilder callback(@NonNull BasicCRUDLoaderCallback loaderCallback) {
+        public RequestBuilder callback(@NonNull Callback loaderCallback) {
             this.loaderCallback = loaderCallback;
             return this;
         }
@@ -373,7 +373,7 @@ public class BasicCRUDLoader implements LoaderManager.LoaderCallbacks<Cursor> {
          * will be called as the loader state changes.  If at the point of call
          * the caller is in its started state, and the requested loader
          * already exists and has generated its data, then the callback
-         * {@link com.forkingcode.crudcontent.loader.BasicCRUDLoader.BasicCRUDLoaderCallback#onCursorLoaded(int, Cursor)}
+         * {@link Callback#onCursorLoaded(int, Cursor)}
          * will be called immediately (inside of this function), so you must be prepared
          * for this to happen.
          *

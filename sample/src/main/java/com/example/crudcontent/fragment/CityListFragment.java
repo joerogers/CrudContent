@@ -41,7 +41,7 @@ import java.lang.ref.WeakReference;
  * A simple {@link Fragment} subclass.
  */
 public class CityListFragment extends Fragment
-        implements BasicCRUDLoader.BasicCRUDLoaderCallback {
+        implements BasicCRUDLoader.Callback {
 
     private static final int SORT_BY_DATE = 0;
     private static final int SORT_BY_NAME = 1;

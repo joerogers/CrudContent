@@ -9,7 +9,7 @@ import com.forkingcode.crudcontent.loader.BasicCRUDLoader;
  * Mock loader callback to ensure that data was properly passed to the callback by the loader
  * infrastructure.
  */
-public class MockBasicCRUDLoaderCallback implements BasicCRUDLoader.BasicCRUDLoaderCallback {
+public class MockBasicCRUDLoaderCallback implements BasicCRUDLoader.Callback {
 
     private boolean called = false;
     private int loaderId = 0;
