@@ -11,4 +11,6 @@ dependencies {
 }
 ```
 
+Note: This library will also add the support-v4 library to your project.
+
 See [Wiki](https://github.com/joerogers/CrudContent/wiki) for usage instructions
