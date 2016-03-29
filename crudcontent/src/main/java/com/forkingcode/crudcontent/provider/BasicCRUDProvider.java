@@ -473,8 +473,9 @@ public abstract class BasicCRUDProvider extends ContentProvider {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         db.acquireReference();
 
+        Cursor cursor = null;
         try {
-            Cursor cursor = db.query(distinct, table, projection, useSelection, useSelectionArgs, null, null, sortOrder, limit);
+            cursor = db.query(distinct, table, projection, useSelection, useSelectionArgs, null, null, sortOrder, limit);
             // Register the cursor with the requested URI so the caller will receive
             // future database change notifications. Useful for "loaders" which take advantage
             // of this concept.
@@ -482,7 +483,6 @@ public abstract class BasicCRUDProvider extends ContentProvider {
             if (context != null) {
                 cursor.setNotificationUri(context.getContentResolver(), uri);
             }
-            return cursor;
         }
         catch (SQLiteException e) {
             if (LOGGING_ENABLED) {
@@ -494,6 +494,16 @@ public abstract class BasicCRUDProvider extends ContentProvider {
         finally {
             db.releaseReference();
         }
+
+        // There is a small chance the database was closed externally because the app is shutting
+        // down in parallel. In that case, close the cursor and return null, to prevent later
+        // exceptions about cursors that are no longer open
+        if (!db.isOpen() && cursor != null) {
+            cursor.close();
+            cursor = null;
+        }
+
+        return cursor;
     }
 
     /**
@@ -640,7 +650,21 @@ public abstract class BasicCRUDProvider extends ContentProvider {
     }
 
     /**
-     * The provider will close the database when the UI is hidden or in the background.
+     * Provide the default trim level at which the database should be closed.
+     *
+     * @return the trim level at which the database should be closed.
+     * Default level is TRIM_MEMORY_BACKGROUND which indicates the database will be closed when the
+     * app is placed on the LRU list
+     *
+     * To disable or keep database open as long as possible use TRIM_MEMORY_COMPLETE or something larger.
+     * @see ComponentCallbacks2
+     */
+    public int getDefaultTrimLevel() {
+        return ComponentCallbacks2.TRIM_MEMORY_BACKGROUND;
+    }
+
+    /**
+     * The provider will close the database when app is in the background.
      * If there is an active connection, it will continue to process
      * due to explicit reference counting added via this provider implementation.
      * The database will close when all references are released, and memory trim request is made.
@@ -652,11 +676,15 @@ public abstract class BasicCRUDProvider extends ContentProvider {
     @Override
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
-        if (level >= ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN) {
+        if (level >= getDefaultTrimLevel()) {
             // In the background. Close the database via the helper.
             // If there is an active connection, it will continue to process
             // due to explicit reference counting added via this provider implementation.
             // The database will close when all references are released.
+            if (LOGGING_ENABLED) {
+                Log.d(TAG, "onTrimMemory: closing database");
+            }
+
             dbHelper.close();
         }
     }
