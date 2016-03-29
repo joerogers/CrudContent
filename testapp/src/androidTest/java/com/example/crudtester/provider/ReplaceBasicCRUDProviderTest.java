@@ -97,6 +97,7 @@ public class ReplaceBasicCRUDProviderTest extends BaseBasicCRUDProviderTest {
      * the "id" will be different, but the contents identical.
      */
     @Test
+    @Override
     public void test05InsertConflicts() {
         // Prep by inserting data
         ContentValues insertData = DataUtilities.insertUser1();
@@ -137,6 +138,7 @@ public class ReplaceBasicCRUDProviderTest extends BaseBasicCRUDProviderTest {
      * This variation tests bulk inserting identical data.  100% conflicts
      */
     @Test
+    @Override
     public void test06BulkInsertConflicts() {
         // Prep by inserting data
         ContentValues[] insertData = DataUtilities.insertBulkUsers();
@@ -170,6 +172,7 @@ public class ReplaceBasicCRUDProviderTest extends BaseBasicCRUDProviderTest {
      * conflicted. All rows should be inserted and the original row should be replaced.
      */
     @Test
+    @Override
     public void test07BulkInsertPartialConflicts() {
         // Prep by inserting data. This data wil conflict on 2nd row of bulk update
         ContentValues insertData = DataUtilities.insertUser2();
@@ -212,6 +215,7 @@ public class ReplaceBasicCRUDProviderTest extends BaseBasicCRUDProviderTest {
      * already exists.
      */
     @Test
+    @Override
     public void test08UpdateConflicts() {
         // Prep by inserting data
         ContentValues[] insertData = DataUtilities.insertBulkUsers();

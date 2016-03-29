@@ -102,6 +102,7 @@ public class RollbackBasicCRUDProviderTest extends BaseBasicCRUDProviderTest {
      * which indicates the insert failed and was rolled back.
      */
     @Test
+    @Override
     public void test05InsertConflicts() {
         // Prep by inserting data
         ContentValues insertData = DataUtilities.insertUser1();
@@ -135,6 +136,7 @@ public class RollbackBasicCRUDProviderTest extends BaseBasicCRUDProviderTest {
      * This variation tests bulk inserting identical data.  100% conflicts
      */
     @Test
+    @Override
     public void test06BulkInsertConflicts() {
         // Prep by inserting data
         ContentValues[] insertData = DataUtilities.insertBulkUsers();
@@ -167,6 +169,7 @@ public class RollbackBasicCRUDProviderTest extends BaseBasicCRUDProviderTest {
      * conflicted. However, due to rollbacks, no additional data is inserted.
      */
     @Test
+    @Override
     public void test07BulkInsertPartialConflicts() {
         // Prep by inserting data. This data wil conflict on 2nd row of bulk update
         ContentValues insertData = DataUtilities.insertUser2();
@@ -202,6 +205,7 @@ public class RollbackBasicCRUDProviderTest extends BaseBasicCRUDProviderTest {
      * already exists.
      */
     @Test
+    @Override
     public void test08UpdateConflicts() {
         // Prep by inserting data
         ContentValues[] insertData = DataUtilities.insertBulkUsers();

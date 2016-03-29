@@ -21,6 +21,7 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.StrictMode;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 import android.test.ServiceTestCase;
@@ -28,6 +29,7 @@ import android.test.ServiceTestCase;
 import com.forkingcode.crudcontent.service.BasicCRUDIntentService;
 import com.forkingcode.crudcontent.service.BasicCrudResultReceiver;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
@@ -81,12 +83,21 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
 
     @Before
     public void compatibleSetUp() throws Exception {
+        StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+                .detectLeakedSqlLiteObjects()
+                .penaltyLog()
+                .build());
         success = false;
         // Initialize system context
         setContext(InstrumentationRegistry.getTargetContext());
         setUp();
         // Setup the mock context
         setContext(new ServiceMockContext(AUTHORITY, InstrumentationRegistry.getTargetContext()));
+    }
+
+    @After
+    public void compatibleTearDown() throws Exception {
+        shutdownService();
     }
 
     @Test

@@ -16,16 +16,20 @@
 
 package com.example.crudtester.provider;
 
+import android.content.ComponentCallbacks2;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.os.StrictMode;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.runner.AndroidJUnit4;
 import android.test.ProviderTestCase2;
+import android.util.Log;
 
 import com.example.crudtester.utils.CursorUtilities;
 import com.example.crudtester.utils.DataUtilities;
@@ -34,6 +38,8 @@ import com.forkingcode.crudcontent.provider.BasicCRUDProvider;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 /**
@@ -54,6 +60,10 @@ public abstract class BaseBasicCRUDProviderTest extends ProviderTestCase2<TestBa
     @Before
     public void compatibleSetUp() throws Exception {
         setContext(InstrumentationRegistry.getTargetContext());
+        StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+                .detectLeakedSqlLiteObjects()
+                .penaltyLog()
+                .build());
         setUp();
         cleanupDB();
     }
@@ -63,11 +73,13 @@ public abstract class BaseBasicCRUDProviderTest extends ProviderTestCase2<TestBa
         DBHelper helper = DBHelper.getInstance(getProvider().getContext());
         SQLiteDatabase db = helper.getWritableDatabase();
         db.delete(getTable(), null, null);
+        getProvider().onTrimMemory(ComponentCallbacks2.TRIM_MEMORY_BACKGROUND);
         db.close();
     }
 
     @After
     public void compatibleTearDown() throws Exception {
+        cleanupDB();
         tearDown();
     }
 
@@ -88,7 +100,7 @@ public abstract class BaseBasicCRUDProviderTest extends ProviderTestCase2<TestBa
     @NonNull
     protected abstract String getDistinctColumn();
 
-    public void test01GetType() throws Exception {
+    protected void test01GetType() throws Exception {
         // Verify the right type is returned using the standard URI
         String type = getMockContentResolver().getType(getUri());
         assertEquals(ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + TestBasicCRUDProvider.AUTHORITY + "/" + getTable(), type);
@@ -114,7 +126,7 @@ public abstract class BaseBasicCRUDProviderTest extends ProviderTestCase2<TestBa
     /**
      * Validates successful operations, insert, update, delete
      */
-    public void test02BasicCrudOperations() {
+    protected void test02BasicCrudOperations() {
 
         // Test basic insertion
         ContentValues insertData = DataUtilities.insertUser1();
@@ -150,7 +162,7 @@ public abstract class BaseBasicCRUDProviderTest extends ProviderTestCase2<TestBa
     /**
      * Validates successful bulk insert, update and delete
      */
-    public void test03BasicBulkCrudOperations() {
+    protected void test03BasicBulkCrudOperations() {
         // Test bulk insertion
         ContentValues[] bulkInsertData = DataUtilities.insertBulkUsers();
         int rows = getMockContentResolver().bulkInsert(getUri(), bulkInsertData);
@@ -184,7 +196,7 @@ public abstract class BaseBasicCRUDProviderTest extends ProviderTestCase2<TestBa
         cursor.close();
     }
 
-    public void test04QueryParameters() {
+    protected void test04QueryParameters() {
         // Test bulk insertion
         ContentValues[] bulkInsertData = DataUtilities.insertBulkUsers();
         int rows = getMockContentResolver().bulkInsert(getUri(), bulkInsertData);
@@ -225,17 +237,28 @@ public abstract class BaseBasicCRUDProviderTest extends ProviderTestCase2<TestBa
         cursor = getMockContentResolver().query(getUri(), projection, null, null, null);
         assertNotNull(cursor);
         assertEquals(3, cursor.getCount());
+        cursor.close();
 
         // Now with distinct parameter
         Uri distinctUri = getUri().buildUpon().appendQueryParameter(BasicCRUDProvider.DISTINCT_PARAMETER, "true").build();
         cursor = getMockContentResolver().query(distinctUri, projection, null, null, null);
         assertNotNull(cursor);
         assertEquals(2, cursor.getCount());
+        cursor.close();
 
         // Test both limit/distinct...
         Uri bothUri = distinctUri.buildUpon().appendQueryParameter(BasicCRUDProvider.LIMIT_PARAMETER, "1").build();
         cursor = getMockContentResolver().query(bothUri, projection, null, null, null);
         assertNotNull(cursor);
         assertEquals(1, cursor.getCount());
+        cursor.close();
     }
+
+    public abstract void test05InsertConflicts();
+
+    public abstract void test06BulkInsertConflicts();
+
+    public abstract void test07BulkInsertPartialConflicts();
+
+    public abstract void test08UpdateConflicts();
 }
