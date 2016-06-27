@@ -5,7 +5,7 @@
 Gradle
 ------
 
-```
+```Gradle
 dependencies {
     com.forkingcode.crudcontent:crudcontent:{latest version above}'
 }
