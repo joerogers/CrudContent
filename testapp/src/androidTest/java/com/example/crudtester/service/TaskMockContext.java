@@ -23,9 +23,9 @@ import android.test.mock.MockContentResolver;
 /**
  * Isolated context that configures and installs the mock content provider
  */
-public class ServiceMockContext extends IsolatedContext {
+public class TaskMockContext extends IsolatedContext {
 
-    public ServiceMockContext(String authority, Context context) {
+    public TaskMockContext(String authority, Context context) {
         super(buildContentResolver(authority), context);
     }
 

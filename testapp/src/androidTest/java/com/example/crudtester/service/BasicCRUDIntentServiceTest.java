@@ -92,7 +92,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
         setContext(InstrumentationRegistry.getTargetContext());
         setUp();
         // Setup the mock context
-        setContext(new ServiceMockContext(AUTHORITY, InstrumentationRegistry.getTargetContext()));
+        setContext(new TaskMockContext(AUTHORITY, InstrumentationRegistry.getTargetContext()));
     }
 
     @After
