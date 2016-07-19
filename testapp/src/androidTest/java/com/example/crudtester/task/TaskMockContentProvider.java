@@ -26,14 +26,14 @@ import android.test.mock.MockContentProvider;
  * Mock provider "pretending" it talks to a database with hardcoded results
  */
 @SuppressLint("Registered")
-public class ServiceMockContentProvider extends MockContentProvider {
+public class TaskMockContentProvider extends MockContentProvider {
 
     public static final long INSERT_ID_RESULT = 1;
     public static final int BULK_INSERT_RESULT = 2;
     public static final int UPDATE_RESULT = 3;
     public static final int DELETE_RESULT = 5;
 
-    public ServiceMockContentProvider() {
+    public TaskMockContentProvider() {
         super();
     }
 

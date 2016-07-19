@@ -26,7 +26,7 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 import android.test.ServiceTestCase;
 
-import com.example.crudtester.task.ServiceMockContentProvider;
+import com.example.crudtester.task.TaskMockContentProvider;
 import com.example.crudtester.task.TaskMockContext;
 import com.forkingcode.crudcontent.service.BasicCRUDIntentService;
 import com.forkingcode.crudcontent.service.BasicCrudResultReceiver;
@@ -117,7 +117,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
                         assertNotNull("Row failed to insert", insertResultUri);
                         assertEquals(uri.getAuthority(), insertResultUri.getAuthority());
                         long id = ContentUris.parseId(insertResultUri);
-                        assertEquals("Invalid id", ServiceMockContentProvider.INSERT_ID_RESULT, id);
+                        assertEquals("Invalid id", TaskMockContentProvider.INSERT_ID_RESULT, id);
                         assertEquals("Request id", REQUEST_ID, requestId);
                         // indicate receiver was called and successful
                         success = true;
@@ -156,7 +156,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
                 .resultReceiver(REQUEST_ID, new BasicCrudResultReceiver(null) {
                     @Override
                     protected void onBulkInsertComplete(int requestId, int rows) {
-                        assertEquals(ServiceMockContentProvider.BULK_INSERT_RESULT, rows);
+                        assertEquals(TaskMockContentProvider.BULK_INSERT_RESULT, rows);
                         assertEquals("Request id", REQUEST_ID, requestId);
                         // indicate receiver was called and successful
                         success = true;
@@ -193,7 +193,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
                 .resultReceiver(REQUEST_ID, new BasicCrudResultReceiver(null) {
                     @Override
                     protected void onUpdateComplete(int requestId, int rows) {
-                        assertEquals(ServiceMockContentProvider.UPDATE_RESULT, rows);
+                        assertEquals(TaskMockContentProvider.UPDATE_RESULT, rows);
                         assertEquals("Request id", REQUEST_ID, requestId);
                         // indicate receiver was called and successful
                         success = true;
@@ -232,7 +232,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
                 .resultReceiver(REQUEST_ID, new BasicCrudResultReceiver(null) {
                     @Override
                     protected void onUpdateComplete(int requestId, int rows) {
-                        assertEquals(ServiceMockContentProvider.UPDATE_RESULT, rows);
+                        assertEquals(TaskMockContentProvider.UPDATE_RESULT, rows);
                         // If request id not provided, 0 i
                         assertEquals("Request id", REQUEST_ID, requestId);
                         // indicate receiver was called and successful
@@ -269,7 +269,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
                 .resultReceiver(REQUEST_ID, new BasicCrudResultReceiver(null) {
                     @Override
                     protected void onDeleteComplete(int requestId, int rows) {
-                        assertEquals(ServiceMockContentProvider.DELETE_RESULT, rows);
+                        assertEquals(TaskMockContentProvider.DELETE_RESULT, rows);
                         assertEquals("Request id", REQUEST_ID, requestId);
                         // indicate receiver was called and successful
                         success = true;
@@ -307,7 +307,7 @@ public class BasicCRUDIntentServiceTest extends ServiceTestCase<BasicCRUDIntentS
                 .resultReceiver(REQUEST_ID, new BasicCrudResultReceiver(null) {
                     @Override
                     protected void onDeleteComplete(int requestId, int rows) {
-                        assertEquals(ServiceMockContentProvider.DELETE_RESULT, rows);
+                        assertEquals(TaskMockContentProvider.DELETE_RESULT, rows);
                         assertEquals("Request id", REQUEST_ID, requestId);
                         // indicate receiver was called and successful
                         success = true;

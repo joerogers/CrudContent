@@ -35,7 +35,7 @@ public class TaskMockContext extends ContextWrapper {
 
     private static MockContentResolver buildContentResolver(String authority) {
         MockContentResolver contentResolver = new MockContentResolver();
-        contentResolver.addProvider(authority, new ServiceMockContentProvider());
+        contentResolver.addProvider(authority, new TaskMockContentProvider());
         return contentResolver;
     }
 
