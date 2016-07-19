@@ -16,8 +16,6 @@ import android.support.v4.content.CursorLoader;
 import com.forkingcode.crudcontent.loader.BasicCRUDLoader;
 import com.forkingcode.crudcontent.provider.BasicCRUDProvider;
 
-import junit.framework.Assert;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -29,12 +27,18 @@ import org.junit.runners.MethodSorters;
 
 import java.util.Arrays;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Test to ensure the BasicCRUDLoader creates the proper cursor loader
  */
 @RunWith(AndroidJUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class BasicCRUDLoaderTest extends Assert {
+public class BasicCRUDLoaderTest {
 
     @Rule
     public final UiThreadTestRule uiThreadTestRule = new UiThreadTestRule();
@@ -563,7 +567,7 @@ public class BasicCRUDLoaderTest extends Assert {
                 .forUri(testUri)
                 .whereMatchesId(ROW_ID)
 
-                        // exception should be thrown here
+                // exception should be thrown here
                 .whereMatchesSelection(testSelection, testSelectionArgs);
     }
 
@@ -579,7 +583,7 @@ public class BasicCRUDLoaderTest extends Assert {
                 .forUri(testUri)
                 .whereMatchesSelection(testSelection, testSelectionArgs)
 
-                        // exception should be thrown here
+                // exception should be thrown here
                 .whereMatchesId(ROW_ID);
     }
 
@@ -630,7 +634,7 @@ public class BasicCRUDLoaderTest extends Assert {
 
                 // should throw exception because callback not called
                 .initLoader();
-     }
+    }
 
     /**
      * Basic test to validate a simple cursor loader providing no query parameters and
