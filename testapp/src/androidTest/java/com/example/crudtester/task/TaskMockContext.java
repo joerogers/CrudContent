@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package com.example.crudtester.service;
+package com.example.crudtester.task;
 
 import android.content.Context;
 import android.test.IsolatedContext;
 import android.test.mock.MockContentResolver;
+
+import com.example.crudtester.service.ServiceMockContentProvider;
 
 /**
  * Isolated context that configures and installs the mock content provider
