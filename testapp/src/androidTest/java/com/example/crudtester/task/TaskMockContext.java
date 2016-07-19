@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Joe Rogers
+ * Copyright 2016 Joe Rogers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,36 @@
 
 package com.example.crudtester.task;
 
+import android.content.ContentResolver;
 import android.content.Context;
-import android.test.IsolatedContext;
+import android.content.ContextWrapper;
 import android.test.mock.MockContentResolver;
-
-import com.example.crudtester.service.ServiceMockContentProvider;
 
 /**
  * Isolated context that configures and installs the mock content provider
  */
-public class TaskMockContext extends IsolatedContext {
+public class TaskMockContext extends ContextWrapper {
+
+    private final MockContentResolver contentResolver;
 
     public TaskMockContext(String authority, Context context) {
-        super(buildContentResolver(authority), context);
+        super(context);
+        contentResolver = buildContentResolver(authority);
     }
 
-    public static MockContentResolver buildContentResolver(String authority) {
+    private static MockContentResolver buildContentResolver(String authority) {
         MockContentResolver contentResolver = new MockContentResolver();
         contentResolver.addProvider(authority, new ServiceMockContentProvider());
+        return contentResolver;
+    }
+
+    @Override
+    public Context getApplicationContext() {
+        return this;
+    }
+
+    @Override
+    public ContentResolver getContentResolver() {
         return contentResolver;
     }
 }

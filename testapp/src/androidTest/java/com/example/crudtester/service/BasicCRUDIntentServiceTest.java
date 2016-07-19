@@ -26,6 +26,7 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 import android.test.ServiceTestCase;
 
+import com.example.crudtester.task.ServiceMockContentProvider;
 import com.example.crudtester.task.TaskMockContext;
 import com.forkingcode.crudcontent.service.BasicCRUDIntentService;
 import com.forkingcode.crudcontent.service.BasicCrudResultReceiver;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Joe Rogers
+ * Copyright 2016 Joe Rogers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.crudtester.service;
+package com.example.crudtester.task;
 
 import android.annotation.SuppressLint;
 import android.content.ContentUris;
