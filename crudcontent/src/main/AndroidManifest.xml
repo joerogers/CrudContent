@@ -16,13 +16,7 @@
   -->
 
 <manifest
-    package="com.forkingcode.crudcontent"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    package="com.forkingcode.crudcontent">
 
-    <application>
-        <service
-            android:name="com.forkingcode.crudcontent.service.BasicCRUDIntentService"
-            android:exported="false">
-        </service>
-    </application>
+    <application/>
 </manifest>
