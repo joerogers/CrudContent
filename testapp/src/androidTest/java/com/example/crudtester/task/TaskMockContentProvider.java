@@ -29,9 +29,11 @@ import android.test.mock.MockContentProvider;
 public class TaskMockContentProvider extends MockContentProvider {
 
     public static final long INSERT_ID_RESULT = 1;
-    public static final int BULK_INSERT_RESULT = 2;
-    public static final int UPDATE_RESULT = 3;
-    public static final int DELETE_RESULT = 5;
+    public static final int UPDATE_SELECTION_RESULT = 2;
+    public static final int UPDATE_ALL_RESULT = 8;
+    public static final int DELETE_SELECTION_RESULT = 3;
+    public static final int DELETE_ALL_RESULT = 10;
+
 
     public TaskMockContentProvider() {
         super();
@@ -39,12 +41,20 @@ public class TaskMockContentProvider extends MockContentProvider {
 
     @Override
     public int bulkInsert(Uri uri, ContentValues[] values) {
-        return BULK_INSERT_RESULT;
+        return values.length;
     }
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        return DELETE_RESULT;
+        if (parseId(uri) > 0) {
+            return 1;
+        }
+
+        if (selection != null) {
+            return DELETE_SELECTION_RESULT;
+        }
+
+        return DELETE_ALL_RESULT;
     }
 
     @Override
@@ -54,6 +64,23 @@ public class TaskMockContentProvider extends MockContentProvider {
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        return UPDATE_RESULT;
+        if (parseId(uri) > 0) {
+            return 1;
+        }
+
+        if (selection != null) {
+            return UPDATE_SELECTION_RESULT;
+        }
+
+        return UPDATE_ALL_RESULT;
+    }
+
+    private long parseId(Uri uri) {
+        try {
+            return ContentUris.parseId(uri);
+        }
+        catch(Exception e) {
+            return -1;
+        }
     }
 }

@@ -91,12 +91,13 @@ public class BasicCRUDInsertTask extends AsyncTask<BasicCRUDInsertTask.Builder, 
         }
 
         /**
-         * Request the task to send an local broadcast with the result of the insert operation using
-         * the INSERT_COMPLETE_ACTION, otherwise no broadcast is sent.
+         * Optionally request the task to send a local broadcast with the result of the insert
+         * operation using the INSERT_COMPLETE_ACTION, otherwise no broadcast is sent.
          * If one row was provided, the uri representing the inserted row will be provided via EXTRA_URI.
          * The number of rows inserted will be provided via EXTRA_ROWS.
          *
          * @return this intent builder
+         * @see LocalBroadcastManager
          */
         public Builder requestResultBroadcast() {
             resultBroadcastRequested = true;

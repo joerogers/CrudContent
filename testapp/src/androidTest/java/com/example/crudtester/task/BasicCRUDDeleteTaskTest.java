@@ -17,8 +17,6 @@
 package com.example.crudtester.task;
 
 import android.content.ContentResolver;
-import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.net.Uri;
@@ -27,7 +25,7 @@ import android.support.test.filters.SmallTest;
 import android.support.test.runner.AndroidJUnit4;
 import android.support.v4.content.LocalBroadcastManager;
 
-import com.forkingcode.crudcontent.task.BasicCRUDInsertTask;
+import com.forkingcode.crudcontent.task.BasicCRUDDeleteTask;
 
 import org.junit.After;
 import org.junit.Before;
@@ -44,16 +42,16 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Test BasicCRUInsertTask, uses a mock content provider as actual interaction
+ * Test BasicCRUDeleteTask, uses a mock content provider as actual interaction
  * with database is not required for these tests.
  */
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class BasicCRUDInsertTaskTest {
+public class BasicCRUDDeleteTaskTest {
 
 
-    private static final IntentFilter INTENT_FILTER = new IntentFilter(BasicCRUDInsertTask.INSERT_COMPLETE_ACTION);
+    private static final IntentFilter INTENT_FILTER = new IntentFilter(BasicCRUDDeleteTask.DELETE_COMPLETE_ACTION);
     private static final String AUTHORITY = "test";
     private static final String TABLE = "my_table";
     private static final Uri URI = new Uri.Builder()
@@ -80,13 +78,12 @@ public class BasicCRUDInsertTaskTest {
     }
 
     @Test
-    public void test01Insert() throws Exception {
+    public void test01DeleteAllRows() throws Exception {
 
         assertNull("Intent not null", receiver.getIntent());
 
-        BasicCRUDInsertTask task = new BasicCRUDInsertTask.Builder(context)
+        BasicCRUDDeleteTask task = new BasicCRUDDeleteTask.Builder(context)
                 .forUri(URI)
-                .usingValues(new ContentValues())
                 .requestResultBroadcast()
                 .start();
 
@@ -95,27 +92,38 @@ public class BasicCRUDInsertTaskTest {
         Thread.sleep(5);
         assertNotNull("Intent null", receiver.getIntent());
 
-        Uri uri = receiver.getIntent().getParcelableExtra(BasicCRUDInsertTask.EXTRA_URI);
-        assertNotNull("Uri null", uri);
-        long id = ContentUris.parseId(uri);
-        assertEquals("Invalid id", TaskMockContentProvider.INSERT_ID_RESULT, id);
+        int rows = receiver.getIntent().getIntExtra(BasicCRUDDeleteTask.EXTRA_ROWS, 0);
+        assertEquals("Incorrect rows", TaskMockContentProvider.DELETE_ALL_RESULT, rows);
+    }
 
-        int rows = receiver.getIntent().getIntExtra(BasicCRUDInsertTask.EXTRA_ROWS, 0);
+    @Test
+    public void test02DeleteById() throws Exception {
+
+        assertNull("Intent not null", receiver.getIntent());
+
+        BasicCRUDDeleteTask task = new BasicCRUDDeleteTask.Builder(context)
+                .forUri(URI)
+                .whereMatchesId(4)
+                .requestResultBroadcast()
+                .start();
+
+        task.get();
+
+        Thread.sleep(5);
+        assertNotNull("Intent null", receiver.getIntent());
+
+        int rows = receiver.getIntent().getIntExtra(BasicCRUDDeleteTask.EXTRA_ROWS, 0);
         assertEquals("Incorrect rows", 1, rows);
     }
 
     @Test
-    public void test02BulkInsert() throws Exception {
+    public void test03DeleteBySelection() throws Exception {
 
         assertNull("Intent not null", receiver.getIntent());
 
-        ContentValues[] valuesArray = new ContentValues[2];
-        valuesArray[0] = new ContentValues();
-        valuesArray[1] = new ContentValues();
-
-        BasicCRUDInsertTask task = new BasicCRUDInsertTask.Builder(context)
+        BasicCRUDDeleteTask task = new BasicCRUDDeleteTask.Builder(context)
                 .forUri(URI)
-                .usingValues(valuesArray)
+                .whereMatchesSelection("column1 = ?", "test")
                 .requestResultBroadcast()
                 .start();
 
@@ -124,20 +132,16 @@ public class BasicCRUDInsertTaskTest {
         Thread.sleep(5);
         assertNotNull("Intent null", receiver.getIntent());
 
-        Uri uri = receiver.getIntent().getParcelableExtra(BasicCRUDInsertTask.EXTRA_URI);
-        assertNull("Uri not null", uri);
-
-        int rows = receiver.getIntent().getIntExtra(BasicCRUDInsertTask.EXTRA_ROWS, 0);
-        assertEquals("Incorrect rows", valuesArray.length, rows);
+        int rows = receiver.getIntent().getIntExtra(BasicCRUDDeleteTask.EXTRA_ROWS, 0);
+        assertEquals("Incorrect rows", TaskMockContentProvider.DELETE_SELECTION_RESULT, rows);
     }
 
     @Test
-    public void test03InsertCancelled() throws Exception {
+    public void test04DeleteCancelled() throws Exception {
         assertNull("Intent not null", receiver.getIntent());
 
-        BasicCRUDInsertTask task = new BasicCRUDInsertTask.Builder(context)
+        BasicCRUDDeleteTask task = new BasicCRUDDeleteTask.Builder(context)
                 .forUri(URI)
-                .usingValues(new ContentValues())
                 .start();
 
         boolean cancelled = false;
@@ -154,12 +158,11 @@ public class BasicCRUDInsertTaskTest {
     }
 
     @Test
-    public void test04InsertWithBroadcastCancelled() throws Exception {
+    public void test05DeleteWithBroadcastCancelled() throws Exception {
         assertNull("Intent not null", receiver.getIntent());
 
-        BasicCRUDInsertTask task = new BasicCRUDInsertTask.Builder(context)
+        BasicCRUDDeleteTask task = new BasicCRUDDeleteTask.Builder(context)
                 .forUri(URI)
-                .usingValues(new ContentValues())
                 .requestResultBroadcast()
                 .start();
 
@@ -177,12 +180,11 @@ public class BasicCRUDInsertTaskTest {
     }
 
     @Test
-    public void test05InsertNoBroadcast() throws Exception {
+    public void test06DeleteNoBroadcast() throws Exception {
         assertNull("Intent not null", receiver.getIntent());
 
-        BasicCRUDInsertTask task = new BasicCRUDInsertTask.Builder(context)
+        BasicCRUDDeleteTask task = new BasicCRUDDeleteTask.Builder(context)
                 .forUri(URI)
-                .usingValues(new ContentValues())
                 .start();
 
         task.get();
@@ -192,33 +194,31 @@ public class BasicCRUDInsertTaskTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void test06NoContentValuesForInsert() throws Exception {
+    public void test07NoUriForDelete() throws Exception {
 
-        BasicCRUDInsertTask task = new BasicCRUDInsertTask.Builder(context)
-                .forUri(URI)
-                .start();
-
-        assertNull("Task not null", task);
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void test07NoUriForInsert() throws Exception {
-
-        BasicCRUDInsertTask task = new BasicCRUDInsertTask.Builder(context)
-                .usingValues(new ContentValues())
+        BasicCRUDDeleteTask task = new BasicCRUDDeleteTask.Builder(context)
                 .start();
 
         assertNull("Task not null", task);
     }
 
     @Test(expected = NullPointerException.class)
-    public void test08NoContextForInsert() throws Exception {
+    public void test08NoContextForDelete() throws Exception {
 
         // Suppressing warning for passing null validated by Android inspections.
         @SuppressWarnings("ConstantConditions")
-        BasicCRUDInsertTask task = new BasicCRUDInsertTask.Builder(null)
+        BasicCRUDDeleteTask task = new BasicCRUDDeleteTask.Builder(null)
                 .forUri(URI)
-                .usingValues(new ContentValues())
+                .start();
+
+        assertNull("Task not null", task);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void test09BothIdAndSelectionInUpdate() throws Exception {
+        BasicCRUDDeleteTask task = new BasicCRUDDeleteTask.Builder(context)
+                .whereMatchesId(3)
+                .whereMatchesSelection("column1 = ?", "test")
                 .start();
 
         assertNull("Task not null", task);
