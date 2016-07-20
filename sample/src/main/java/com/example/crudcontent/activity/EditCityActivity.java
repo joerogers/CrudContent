@@ -21,7 +21,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -32,7 +31,9 @@ import com.example.crudcontent.R;
 import com.example.crudcontent.databinding.EditCityActivityBinding;
 import com.example.crudcontent.fragment.EditCityFragment;
 import com.example.crudcontent.provider.CityContract;
-import com.forkingcode.crudcontent.service.BasicCRUDIntentService;
+import com.forkingcode.crudcontent.task.BasicCRUDDeleteTask;
+import com.forkingcode.crudcontent.task.BasicCRUDInsertTask;
+import com.forkingcode.crudcontent.task.BasicCRUDUpdateTask;
 
 public class EditCityActivity extends AppCompatActivity
         implements EditCityFragment.EditCityFragmentListener {
@@ -74,7 +75,7 @@ public class EditCityActivity extends AppCompatActivity
             EditCityFragment fragment = EditCityFragment.newInstance(cityId);
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, fragment, "frag")
-                    .commit();
+                    .commitNow();
         }
     }
 
@@ -94,16 +95,9 @@ public class EditCityActivity extends AppCompatActivity
         int id = item.getItemId();
 
         switch (id) {
-            case android.R.id.home:
-                Intent intent = NavUtils.getParentActivityIntent(this);
-                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                NavUtils.navigateUpTo(this, intent);
-                return true;
-
             case R.id.action_delete:
-                BasicCRUDIntentService
-                        .performDelete(this, CityContract.URI)
+                new BasicCRUDDeleteTask.Builder(this)
+                        .forUri(CityContract.URI)
                         .whereMatchesId(cityId)
                         .start();
 
@@ -118,14 +112,14 @@ public class EditCityActivity extends AppCompatActivity
     public void submitCity(ContentValues cityValues) {
 
         if (cityId == CityContract.NO_CITY_ID) {
-            BasicCRUDIntentService
-                    .performInsert(this, CityContract.URI)
+            new BasicCRUDInsertTask.Builder(this)
+                    .forUri(CityContract.URI)
                     .usingValues(cityValues)
                     .start();
         }
         else {
-            BasicCRUDIntentService
-                    .performUpdate(this, CityContract.URI)
+            new BasicCRUDUpdateTask.Builder(this)
+                    .forUri(CityContract.URI)
                     .whereMatchesId(cityId)
                     .usingValues(cityValues)
                     .start();

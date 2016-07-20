@@ -16,12 +16,15 @@
 
 package com.example.crudcontent.activity;
 
-import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.StrictMode;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -33,20 +36,19 @@ import com.example.crudcontent.adapter.ToolbarSpinnerAdapter;
 import com.example.crudcontent.databinding.CityActivityBinding;
 import com.example.crudcontent.fragment.CityListFragment;
 import com.example.crudcontent.provider.StateContract;
-import com.forkingcode.crudcontent.service.BasicCRUDIntentService;
-import com.forkingcode.crudcontent.service.BasicCrudResultReceiver;
-
-import java.lang.ref.WeakReference;
+import com.forkingcode.crudcontent.task.BasicCRUDInsertTask;
 
 public class CityActivity extends AppCompatActivity
         implements CityListFragment.CityListFragmentListener {
 
     private static final String STATE_SORT_ORDER = "sortOrder";
-    private static final int STATE_REQUEST_ID = 100;
 
+    private static final IntentFilter INSERT_FILTER = new IntentFilter(BasicCRUDInsertTask.INSERT_COMPLETE_ACTION);
     private static boolean createdStates = false;
     private CityActivityBinding binding;
+    private BroadcastReceiver receiver;
     private int sortOrder = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,19 +69,34 @@ public class CityActivity extends AppCompatActivity
             getSupportActionBar().setTitle(R.string.title_activity_city_list);
         }
 
-        if (!createdStates) {
-            BasicCRUDIntentService
-                    .performBulkInsert(this, StateContract.URI)
-                    .usingValues(StateContract.buildStateValuesArray())
-                    .resultReceiver(STATE_REQUEST_ID, new StatesCreatedResultReceiver(this))
-                    .start();
-        }
-
         if (savedInstanceState != null) {
             sortOrder = savedInstanceState.getInt(STATE_SORT_ORDER, 0);
         }
 
         updateSortOrder(sortOrder);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        if (!createdStates) {
+            receiver = new StatesCreatedResultReceiver();
+            LocalBroadcastManager.getInstance(this).registerReceiver(receiver, INSERT_FILTER);
+            new BasicCRUDInsertTask.Builder(this)
+                    .forUri(StateContract.URI)
+                    .usingValues(StateContract.buildStateValuesArray())
+                    .requestResultBroadcast()
+                    .start();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (receiver != null) {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+        }
     }
 
     @Override
@@ -110,7 +127,7 @@ public class CityActivity extends AppCompatActivity
         updateSortOrder(position);
     }
 
-    public void updateSortOrder(int sortOrder) {
+    private void updateSortOrder(int sortOrder) {
         CityListFragment fragment = (CityListFragment) getSupportFragmentManager().findFragmentById(R.id.city_fragment);
         if (fragment != null) {
             fragment.setSortOrder(sortOrder);
@@ -118,36 +135,25 @@ public class CityActivity extends AppCompatActivity
     }
 
     /**
-     * Result receiver to handle result of the bulk operation and display a SnackBar. Using
-     * a weak reference as the the database operations are asynchronous and do not want to hold
-     * a strong reference to the activity in case it is ended before the service returns
+     * Broadcast receiver to handle result of the state insert bulk operation and display a SnackBar.
      */
-    @SuppressLint("ParcelCreator")  // Using the ResultReceiver parceling...
-    public static class StatesCreatedResultReceiver extends BasicCrudResultReceiver {
-
-        // saving the reference to the city activity. A weak reference allows the garbage
-        // collector reclaim the memory if this is the last reference to the activity
-        private final WeakReference<CityActivity> cityActivityRef;
-
-        public StatesCreatedResultReceiver(CityActivity cityActivity) {
-            super(new Handler());
-            cityActivityRef = new WeakReference<>(cityActivity);
-        }
+    public class StatesCreatedResultReceiver extends BroadcastReceiver {
 
         @Override
-        protected void onBulkInsertComplete(int requestId, int rows) {
+        public void onReceive(Context context, Intent intent) {
+            int rows = intent.getIntExtra(BasicCRUDInsertTask.EXTRA_ROWS, -1);
+
             // Just marking it was complete. Because sample uses IGNORE conflict
             // resolution rows may be 0 if states were added during a previous run
             // of the application
-            CityActivity.createdStates = rows >= 0;
+            createdStates = rows >= 0;
 
-            CityActivity activity = cityActivityRef.get();
 
             // Ensure the activity still exists. Also check the "bindings", just in case the activity
             // is in process of being destroyed and the bindings have been released but activity has not
             // been garbage collected.
-            if (activity != null && activity.binding != null) {
-                Snackbar.make(activity.binding.coordinatorLayout, R.string.states_created, Snackbar.LENGTH_LONG).show();
+            if (binding != null) {
+                Snackbar.make(binding.coordinatorLayout, R.string.states_created, Snackbar.LENGTH_LONG).show();
             }
         }
     }

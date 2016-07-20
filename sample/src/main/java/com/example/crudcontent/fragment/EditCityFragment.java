@@ -20,7 +20,6 @@ package com.example.crudcontent.fragment;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -75,6 +74,7 @@ public class EditCityFragment extends Fragment
     private static final String ARG_CITY_ID = "cityId";
 
     private EditCityFragmentListener listener;
+    private EditCityFragmentBinding binding;
     private long cityId = CityContract.NO_CITY_ID;
     private String city;
     private long stateId = -1;
@@ -106,13 +106,7 @@ public class EditCityFragment extends Fragment
         animationEnabled = false;
         Fragment parent = getParentFragment();
         Object objectToCast = parent != null ? parent : context;
-        try {
-            listener = (EditCityFragmentListener) objectToCast;
-        }
-        catch (ClassCastException e) {
-            throw new ClassCastException(objectToCast.getClass().getSimpleName()
-                    + " must implement EditCityFragmentListener");
-        }
+        listener = (EditCityFragmentListener) objectToCast;
     }
 
     @Override
@@ -130,11 +124,11 @@ public class EditCityFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        EditCityFragmentBinding binding = EditCityFragmentBinding.inflate(inflater, container, false);
+        binding = EditCityFragmentBinding.inflate(inflater, container, false);
         binding.setListeners(this);
         binding.stateSpinner.setAdapter(new StateAdapter(getContext()));
         if (cityId != CityContract.NO_CITY_ID) {
-            updateDateVisitedView(binding);
+            updateDateVisitedView();
         }
 
         return binding.getRoot();
@@ -180,11 +174,9 @@ public class EditCityFragment extends Fragment
     @Override
     public void onResume() {
         super.onResume();
-        EditCityFragmentBinding binding = DataBindingUtil.getBinding(getView());
-        if (binding == null) return;
         binding.cityView.setText(city);
-        updateSpinnerSelection(binding);
-        updateDateVisitedView(binding);
+        updateSpinnerSelection();
+        updateDateVisitedView();
         binding.notesView.setText(notes);
 
         if (!animationEnabled) {
@@ -195,8 +187,6 @@ public class EditCityFragment extends Fragment
     @Override
     public void onPause() {
         super.onPause();
-        EditCityFragmentBinding binding = DataBindingUtil.getBinding(getView());
-        if (binding == null) return;
         city = binding.cityView.getText().toString();
         notes = binding.notesView.getText().toString();
     }
@@ -211,6 +201,12 @@ public class EditCityFragment extends Fragment
     }
 
     @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
+
+    @Override
     public void onDetach() {
         listener = null;
         handler.removeMessages(ENABLE_ANIMATION);
@@ -222,7 +218,6 @@ public class EditCityFragment extends Fragment
     public boolean handleMessage(Message msg) {
         switch (msg.what) {
             case ENABLE_ANIMATION:
-                EditCityFragmentBinding binding = DataBindingUtil.getBinding(getView());
                 if (binding == null) return false;
                 binding.cityTextLayout.setHintAnimationEnabled(true);
                 binding.notesTextLayout.setHintAnimationEnabled(true);
@@ -250,40 +245,34 @@ public class EditCityFragment extends Fragment
     private void onCityLoadComplete(Cursor cursor) {
         // If cursor is null, loader must be resetting
         // since we are not holding onto the cursor, all is good
-        if (cursor == null) return;
-
-        EditCityFragmentBinding binding = DataBindingUtil.getBinding(getView());
-        if (binding == null) return;
+        if (cursor == null || binding == null) return;
 
         // Move to first row.
         if (cursor.moveToFirst()) {
             binding.cityView.setText(cursor.getString(NAME_POS));
             stateId = cursor.getLong(STATE_ID_POS);
-            updateSpinnerSelection(binding);
+            updateSpinnerSelection();
             dateOfVisit = new Date(cursor.getLong(DATE_VISITED_POS));
-            updateDateVisitedView(binding);
+            updateDateVisitedView();
             binding.notesView.setText(cursor.getString(NOTES_POS));
         }
     }
 
     private void onStateLoadComplete(Cursor cursor) {
-        EditCityFragmentBinding binding = DataBindingUtil.getBinding(getView());
-        if (binding == null) return;
 
+        if (binding == null) return;
         StateAdapter adapter = (StateAdapter) binding.stateSpinner.getAdapter();
         adapter.swapCursor(cursor);
+
         if (cursor != null) {
-            updateSpinnerSelection(binding);
+            updateSpinnerSelection();
         }
     }
 
     @Override
     public void onDateSet(@NonNull Date date) {
         dateOfVisit = date;
-        EditCityFragmentBinding binding = DataBindingUtil.getBinding(getView());
-        if (binding != null) {
-            updateDateVisitedView(binding);
-        }
+        updateDateVisitedView();
     }
 
     @SuppressWarnings("unused") // called by data binding
@@ -294,8 +283,6 @@ public class EditCityFragment extends Fragment
 
     @SuppressWarnings("unused") // called by data binding
     public void onSubmitClick(View v) {
-        EditCityFragmentBinding binding = DataBindingUtil.getBinding(getView());
-        if (binding == null) return;
 
         if (TextUtils.isEmpty(binding.cityView.getText().toString())) {
             binding.cityTextLayout.setErrorEnabled(true);
@@ -303,7 +290,7 @@ public class EditCityFragment extends Fragment
             return;
         }
 
-        listener.submitCity(buildContentValues(binding));
+        listener.submitCity(buildContentValues());
     }
 
     @SuppressWarnings("unused") // called by data binding
@@ -311,7 +298,7 @@ public class EditCityFragment extends Fragment
         stateId = id;
     }
 
-    private void updateSpinnerSelection(@NonNull EditCityFragmentBinding binding) {
+    private void updateSpinnerSelection() {
         if (binding.stateSpinner.getCount() == 0 ||
                 stateId == binding.stateSpinner.getSelectedItemId()) return;
 
@@ -326,12 +313,12 @@ public class EditCityFragment extends Fragment
         binding.stateSpinner.setSelection(0);
     }
 
-    private void updateDateVisitedView(EditCityFragmentBinding binding) {
+    private void updateDateVisitedView() {
         binding.dateVisited.setText(DateFormat.getMediumDateFormat(getActivity()).format(dateOfVisit));
     }
 
 
-    private ContentValues buildContentValues(@NonNull EditCityFragmentBinding binding) {
+    private ContentValues buildContentValues() {
         ContentValues values = new ContentValues();
         values.put(CityContract.Columns.NAME, binding.cityView.getText().toString());
         values.put(CityContract.Columns.STATE_ID, stateId);

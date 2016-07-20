@@ -16,9 +16,9 @@
 
 package com.example.crudcontent.fragment;
 
-import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
@@ -53,21 +53,15 @@ public class DatePickerDialogFragment extends DialogFragment
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(Context context) {
+        super.onAttach(context);
 
         // In the app this dialog is never called by an activity, but
         // here is an example of how to dynamically handle either a parent fragment
         // or an activity for our listener
         Fragment parent = getParentFragment();
-        Object objectToCast = parent != null ? parent : activity;
-        try {
-            listener = (DatePickerDialogFragmentListener) objectToCast;
-        }
-        catch (ClassCastException e) {
-            throw new ClassCastException(objectToCast.getClass().getSimpleName() +
-                    " must implement DatePickerFragmentListener");
-        }
+        Object objectToCast = parent != null ? parent : context;
+        listener = (DatePickerDialogFragmentListener) objectToCast;
     }
 
     @Override

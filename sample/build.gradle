@@ -10,7 +10,10 @@ android {
         targetSdkVersion rootProject.compileSdkVersion
         versionCode 1
         versionName "1.0"
-        generatedDensities = ['mdpi', 'hdpi', 'xhdpi', 'xxhdpi']
+        // Rely on support library for vector drawables
+        vectorDrawables {
+            useSupportLibrary = true
+        }
     }
 
     dataBinding {

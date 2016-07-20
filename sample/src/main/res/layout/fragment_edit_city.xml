@@ -35,7 +35,7 @@
                 app:hintAnimationEnabled="false">
 
                 <!-- using textNoSuggestions in sample to eliminate OS level leak for testing -->
-                <EditText
+                <android.support.design.widget.TextInputEditText
                     android:id="@+id/cityView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -64,7 +64,7 @@
                 android:id="@+id/stateSpinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:onItemSelected="@{listeners.onStateSelected}"
+                android:onItemSelected="@{listeners::onStateSelected}"
                 tools:listitem="@android:layout/simple_spinner_item"/>
 
             <android.support.design.widget.TextInputLayout
@@ -76,7 +76,7 @@
                 app:hintAnimationEnabled="false">
 
                 <!-- using textNoSuggestions in sample to eliminate OS level leak for testing -->
-                <EditText
+                <android.support.design.widget.TextInputEditText
                     android:id="@+id/dateVisited"
                     android:layout_width="100dp"
                     android:layout_height="wrap_content"
@@ -85,7 +85,7 @@
                     android:focusableInTouchMode="false"
                     android:gravity="center_vertical"
                     android:inputType="date|textNoSuggestions"
-                    android:onClick="@{listeners.onDateVisitedClick}"
+                    android:onClick="@{listeners::onDateVisitedClick}"
                     android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                     tools:text="5/1/2000"/>
             </android.support.design.widget.TextInputLayout>
@@ -99,7 +99,7 @@
                 app:hintAnimationEnabled="false">
 
                 <!-- using textNoSuggestions in sample to eliminate OS level leak for testing -->
-                <EditText
+                <android.support.design.widget.TextInputEditText
                     android:id="@+id/notesView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -114,7 +114,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                android:onClick="@{listeners.onSubmitClick}"
+                android:onClick="@{listeners::onSubmitClick}"
                 android:text="@string/submit_button"
                 android:textColor="?android:attr/textColorPrimaryInverse"/>
         </LinearLayout>

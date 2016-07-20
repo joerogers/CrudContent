@@ -66,13 +66,7 @@ public class CityListFragment extends Fragment
         super.onAttach(context);
         Fragment parent = getParentFragment();
         Object objectToCast = parent != null ? parent : context;
-        try {
-            listener = (CityListFragmentListener) objectToCast;
-        }
-        catch (ClassCastException e) {
-            throw new ClassCastException(objectToCast.getClass().getSimpleName()
-                    + " must implement CityListFragmentListener");
-        }
+        listener = (CityListFragmentListener) objectToCast;
 
         animationDuration = context.getResources().getInteger(android.R.integer.config_shortAnimTime);
     }
@@ -222,6 +216,7 @@ public class CityListFragment extends Fragment
      */
     static class FadeOutEndAction implements Runnable {
         private final WeakReference<View> viewRef;
+
         FadeOutEndAction(View view) {
             viewRef = new WeakReference<>(view);
         }
