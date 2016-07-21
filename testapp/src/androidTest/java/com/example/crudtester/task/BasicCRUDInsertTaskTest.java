@@ -135,14 +135,14 @@ public class BasicCRUDInsertTaskTest {
     public void test03InsertCancelled() throws Exception {
         assertNull("Intent not null", receiver.getIntent());
 
+        boolean cancelled = false;
         BasicCRUDInsertTask task = new BasicCRUDInsertTask.Builder(context)
                 .forUri(URI)
                 .usingValues(new ContentValues())
                 .start();
 
-        boolean cancelled = false;
         try {
-            task.cancel(true);
+            assertTrue(task.cancel(false));
             task.get();
         }
         catch (CancellationException e) {
@@ -157,15 +157,15 @@ public class BasicCRUDInsertTaskTest {
     public void test04InsertWithBroadcastCancelled() throws Exception {
         assertNull("Intent not null", receiver.getIntent());
 
+        boolean cancelled = false;
         BasicCRUDInsertTask task = new BasicCRUDInsertTask.Builder(context)
                 .forUri(URI)
                 .usingValues(new ContentValues())
                 .requestResultBroadcast()
                 .start();
 
-        boolean cancelled = false;
         try {
-            task.cancel(true);
+            assertTrue(task.cancel(false));
             task.get();
         }
         catch (CancellationException e) {

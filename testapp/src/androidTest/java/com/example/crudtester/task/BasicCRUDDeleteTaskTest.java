@@ -140,13 +140,14 @@ public class BasicCRUDDeleteTaskTest {
     public void test04DeleteCancelled() throws Exception {
         assertNull("Intent not null", receiver.getIntent());
 
+        boolean cancelled = false;
         BasicCRUDDeleteTask task = new BasicCRUDDeleteTask.Builder(context)
                 .forUri(URI)
+                .whereMatchesId(5)
                 .start();
 
-        boolean cancelled = false;
         try {
-            task.cancel(true);
+            assertTrue(task.cancel(false));
             task.get();
         }
         catch (CancellationException e) {
@@ -161,14 +162,14 @@ public class BasicCRUDDeleteTaskTest {
     public void test05DeleteWithBroadcastCancelled() throws Exception {
         assertNull("Intent not null", receiver.getIntent());
 
+        boolean cancelled = false;
         BasicCRUDDeleteTask task = new BasicCRUDDeleteTask.Builder(context)
                 .forUri(URI)
                 .requestResultBroadcast()
                 .start();
 
-        boolean cancelled = false;
         try {
-            task.cancel(true);
+            assertTrue(task.cancel(false));
             task.get();
         }
         catch (CancellationException e) {

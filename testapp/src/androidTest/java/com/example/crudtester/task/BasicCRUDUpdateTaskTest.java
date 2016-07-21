@@ -151,7 +151,7 @@ public class BasicCRUDUpdateTaskTest {
                 .start();
 
         try {
-            task.cancel(true);
+            assertTrue(task.cancel(false));
             task.get();
         }
         catch (CancellationException e) {
@@ -166,15 +166,15 @@ public class BasicCRUDUpdateTaskTest {
     public void test05UpdateWithBroadcastCancelled() throws Exception {
         assertNull("Intent not null", receiver.getIntent());
 
+        boolean cancelled = false;
         BasicCRUDUpdateTask task = new BasicCRUDUpdateTask.Builder(context)
                 .forUri(URI)
                 .usingValues(new ContentValues())
                 .requestResultBroadcast()
                 .start();
 
-        boolean cancelled = false;
         try {
-            task.cancel(true);
+            assertTrue(task.cancel(false));
             task.get();
         }
         catch (CancellationException e) {
