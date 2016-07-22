@@ -26,16 +26,26 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 
 /**
- * An async task for deleting data asynchronously. The task uses the AsyncTask tread pool allowing
- * multiple tasks to operate concurrently.
+ * An {@link android.os.AsyncTask} for deleting data in the background. The task uses the
+ * {@link android.os.AsyncTask#THREAD_POOL_EXECUTOR} allowing multiple tasks to operate concurrently.
+ *
+ * You must create the task via the {@link Builder}
  */
 public class BasicCRUDDeleteTask extends AsyncTask<BasicCRUDDeleteTask.Builder, Void, Void> {
 
+    /**
+     * The {@link android.content.Intent} action sent via {@link android.support.v4.content.LocalBroadcastManager} when
+     * the delete operation is complete and requested
+     */
     public static final String DELETE_COMPLETE_ACTION = "com.forkingcode.crudcontent.action.delete_complete";
+
+    /**
+     * The extra indicating the number of rows deleted
+     */
     public static final String EXTRA_ROWS = "com.forkingcode.crudcontent.extra.rows";
 
     /**
-     * Builder uses to create a new delete task
+     * Builder used to create a new delete task
      */
     public static class Builder {
         private final Context applicationContext;
@@ -50,7 +60,7 @@ public class BasicCRUDDeleteTask extends AsyncTask<BasicCRUDDeleteTask.Builder, 
          *
          * @param context A context used in the creation of the task. The application context
          *                will be retrieved via this context, to avoid holding direct
-         *                references to activities, etc.
+         *                references to any activities, views, etc.
          */
         public Builder(@NonNull Context context) {
             this.applicationContext = context.getApplicationContext();
@@ -58,7 +68,7 @@ public class BasicCRUDDeleteTask extends AsyncTask<BasicCRUDDeleteTask.Builder, 
 
         /**
          * Provide the Uri for the delete operation. You must call this method on the builder.
-         * Failure to do so will result in an IllegalStateException when start() is called.
+         * Failure to do so will result in an IllegalStateException when {@link #start()} is called.
          *
          * @param uri The uri associated with the provider to query.
          * @return This builder object
@@ -71,14 +81,14 @@ public class BasicCRUDDeleteTask extends AsyncTask<BasicCRUDDeleteTask.Builder, 
 
         /**
          * Optionally indicate you wish to query a specific row by id. If this is not provided
-         * all rows will be returned unless whereMatchesSelection was called instead, or you already
+         * all rows will be returned unless {@link #whereMatchesSelection(String, String...)} was called instead, or you already
          * appended the rowId to the Uri.
          *
-         * Note: if you provided a Uri with the rowId already appended, then you should avoid calling
+         * If you provided a Uri with the rowId already appended, then you should avoid calling
          * this method as it will append the rowId to the end of the Uri provided.
          *
          * An IllegalStateException will be thrown if both a rowId and a selection are provided when
-         * start() is called.
+         * {@link #start()} is called.
          *
          * @param rowId The id of the row to select from the database
          * @return This builder object
@@ -90,11 +100,11 @@ public class BasicCRUDDeleteTask extends AsyncTask<BasicCRUDDeleteTask.Builder, 
 
         /**
          * Optionally provide a selection and selection arguments for the update. If this is not provided
-         * all rows will be updated unless whereMatchesRowId was called instead, or you alreadly appended
+         * all rows will be updated unless {@link #whereMatchesId(long)} was called instead, or you already appended
          * the rowId to the the Uri.
          *
          * An IllegalStateException will be thrown if both a rowId and a selection are provided when
-         * start() is called.
+         * {@link #start()} is called.
          *
          * @param selection     A selection criteria to apply when filtering rows (ie where clause).
          * @param selectionArgs You may include ?s in selection, which will be replaced by
@@ -112,11 +122,11 @@ public class BasicCRUDDeleteTask extends AsyncTask<BasicCRUDDeleteTask.Builder, 
 
         /**
          * Optionally request the task to send an local broadcast with the result of the delete
-         * operation using the DELETE_COMPLETE_ACTION, otherwise no broadcast is sent.
-         * The number of rows deleted will be provided via EXTRA_ROWS.
+         * operation using the {@link #DELETE_COMPLETE_ACTION}, otherwise no broadcast is sent.
+         * The number of rows deleted will be provided via {@link #EXTRA_ROWS}.
          *
          * @return this intent builder
-         * @see LocalBroadcastManager
+         * @see android.support.v4.content.LocalBroadcastManager
          */
         public Builder requestResultBroadcast() {
             resultBroadcastRequested = true;
@@ -126,7 +136,7 @@ public class BasicCRUDDeleteTask extends AsyncTask<BasicCRUDDeleteTask.Builder, 
         /**
          * Start the delete task.
          *
-         * @return An instance of the BasicCRUDInsertTask that could be used for cancellation
+         * @return An instance of the BasicCRUDDeleteTask that could be used for cancellation
          * @throws IllegalStateException if uri or on or more ContentValues was not provided
          */
         public BasicCRUDDeleteTask start() {

@@ -25,17 +25,31 @@ import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 
 /**
- * An async task for inserting data asynchronously. The task uses the AsyncTask tread pool allowing
- * multiple tasks to operate concurrently.
+ * An {@link android.os.AsyncTask} for inserting data in the background. The task uses the
+ * {@link android.os.AsyncTask#THREAD_POOL_EXECUTOR} allowing multiple tasks to operate concurrently.
+ *
+ * You must create the task via the {@link Builder}
  */
 public class BasicCRUDInsertTask extends AsyncTask<BasicCRUDInsertTask.Builder, Void, Void> {
 
+    /**
+     * The {@link android.content.Intent} action sent via {@link android.support.v4.content.LocalBroadcastManager} when
+     * the insert operation is complete and requested
+     */
     public static final String INSERT_COMPLETE_ACTION = "com.forkingcode.crudcontent.action.insert_complete";
+
+    /**
+     * The extra indicating the number uri of the inserted row when a single item is inserted
+     */
     public static final String EXTRA_URI = "com.forkingcode.crudcontent.extra.uri";
+
+    /**
+     * The extra indicating the number of rows inserted or bulk inserted
+     */
     public static final String EXTRA_ROWS = "com.forkingcode.crudcontent.extra.rows";
 
     /**
-     * Builder uses to create a new insert task
+     * Builder used to create a new insert task
      */
     public static class Builder {
         private final Context applicationContext;
@@ -48,7 +62,8 @@ public class BasicCRUDInsertTask extends AsyncTask<BasicCRUDInsertTask.Builder, 
          *
          * @param context A context used in the creation of the task. The application context
          *                will be retrieved via this context, to avoid holding direct
-         *                references to activities, etc.
+         *                references to any activities, views, etc.
+         * @see android.content.Context
          */
         public Builder(@NonNull Context context) {
             this.applicationContext = context.getApplicationContext();
@@ -56,7 +71,7 @@ public class BasicCRUDInsertTask extends AsyncTask<BasicCRUDInsertTask.Builder, 
 
         /**
          * Provide the Uri for insertion. You must call this method on the builder. Failure to do so
-         * will result in an IllegalStateException when start() is called.
+         * will result in an IllegalStateException when {@link #start()} is called.
          *
          * @param uri The uri associated with the provider to query.
          * @return This builder object
@@ -91,13 +106,13 @@ public class BasicCRUDInsertTask extends AsyncTask<BasicCRUDInsertTask.Builder, 
         }
 
         /**
-         * Optionally request the task to send a local broadcast with the result of the insert
-         * operation using the INSERT_COMPLETE_ACTION, otherwise no broadcast is sent.
-         * If one row was provided, the uri representing the inserted row will be provided via EXTRA_URI.
-         * The number of rows inserted will be provided via EXTRA_ROWS.
+         * Optionally request the task to send a local broadcast intent with the result of the insert
+         * operation using the {@link #INSERT_COMPLETE_ACTION}, otherwise no broadcast is sent.
+         * If one row was provided, the uri representing the inserted row will be provided via {@link #EXTRA_URI}.
+         * The number of rows inserted will be provided via {@link #EXTRA_ROWS}.
          *
          * @return this intent builder
-         * @see LocalBroadcastManager
+         * @see android.support.v4.content.LocalBroadcastManager
          */
         public Builder requestResultBroadcast() {
             resultBroadcastRequested = true;

@@ -27,16 +27,26 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 
 /**
- * An async task for updating data asynchronously. The task uses the AsyncTask tread pool allowing
- * multiple tasks to operate concurrently.
+ * An {@link android.os.AsyncTask} for updating data in the background. The task uses the
+ * {@link android.os.AsyncTask#THREAD_POOL_EXECUTOR} allowing multiple tasks to operate concurrently.
+ *
+ * You must create the task via the {@link Builder}
  */
 public class BasicCRUDUpdateTask extends AsyncTask<BasicCRUDUpdateTask.Builder, Void, Void> {
 
+    /**
+     * The {@link android.content.Intent} action sent via {@link android.support.v4.content.LocalBroadcastManager} when
+     * the update operation is complete and requested
+     */
     public static final String UPDATE_COMPLETE_ACTION = "com.forkingcode.crudcontent.action.update_complete";
+
+    /**
+     * The extra indicating the number of rows updated
+     */
     public static final String EXTRA_ROWS = "com.forkingcode.crudcontent.extra.rows";
 
     /**
-     * Builder uses to create a new update task
+     * Builder used to create a new update task
      */
     public static class Builder {
         private final Context applicationContext;
@@ -52,7 +62,7 @@ public class BasicCRUDUpdateTask extends AsyncTask<BasicCRUDUpdateTask.Builder, 
          *
          * @param context A context used in the creation of the task. The application context
          *                will be retrieved via this context, to avoid holding direct
-         *                references to activities, etc.
+         *                references to any activities, views, etc.
          */
         public Builder(@NonNull Context context) {
             this.applicationContext = context.getApplicationContext();
@@ -60,7 +70,7 @@ public class BasicCRUDUpdateTask extends AsyncTask<BasicCRUDUpdateTask.Builder, 
 
         /**
          * Provide the Uri for updates. You must call this method on the builder. Failure to do so
-         * will result in an IllegalStateException when start() is called.
+         * will result in an IllegalStateException when {@link #start()} is called.
          *
          * @param uri The uri associated with the provider to query.
          * @return This builder object
@@ -73,7 +83,7 @@ public class BasicCRUDUpdateTask extends AsyncTask<BasicCRUDUpdateTask.Builder, 
 
         /**
          * Provide a single row of values for the update operation. Failure to do so
-         * will result in an IllegalStateException when start() is called.
+         * will result in an IllegalStateException when {@link #start()} is called.
          *
          * @param values The content values indicating the columns/value pairs for the operation
          * @return this intent builder
@@ -86,14 +96,14 @@ public class BasicCRUDUpdateTask extends AsyncTask<BasicCRUDUpdateTask.Builder, 
 
         /**
          * Optionally indicate you wish to query a specific row by id. If this is not provided
-         * all rows will be returned unless whereMatchesSelection was called instead, or you already
+         * all rows will be returned unless {@link #whereMatchesSelection(String, String...)} was called instead, or you already
          * appended the rowId to the Uri.
          *
          * Note: if you provided a Uri with the rowId already appended, then you should avoid calling
          * this method as it will append the rowId to the end of the Uri provided.
          *
          * An IllegalStateException will be thrown if both a rowId and a selection are provided when
-         * start() is called.
+         * {@link #start()} is called.
          * @param rowId The id of the row to select from the database
          * @return This builder object
          */
@@ -104,11 +114,11 @@ public class BasicCRUDUpdateTask extends AsyncTask<BasicCRUDUpdateTask.Builder, 
 
         /**
          * Optionally provide a selection and selection arguments for the update. If this is not provided
-         * all rows will be updated unless whereMatchesRowId was called instead, or you alreadly appended
+         * all rows will be updated unless {@link #whereMatchesId(long)} was called instead, or you already appended
          * the rowId to the the Uri.
          *
          * An IllegalStateException will be thrown if both a rowId and a selection are provided when
-         * start() is called.
+         * {@link #start()} is called.
          *
          * @param selection     A selection criteria to apply when filtering rows (ie where clause).
          * @param selectionArgs You may include ?s in selection, which will be replaced by
@@ -126,11 +136,11 @@ public class BasicCRUDUpdateTask extends AsyncTask<BasicCRUDUpdateTask.Builder, 
 
         /**
          * Optionally request the task to send an local broadcast with the result of the update
-         * operation using the UPDATE_COMPLETE_ACTION, otherwise no broadcast is sent.
-         * The number of rows updated will be provided via EXTRA_ROWS.
+         * operation using the {@link #UPDATE_COMPLETE_ACTION}, otherwise no broadcast is sent.
+         * The number of rows updated will be provided via {@link #EXTRA_ROWS}.
          *
          * @return this intent builder
-         * @see LocalBroadcastManager
+         * @see android.support.v4.content.LocalBroadcastManager
          */
         public Builder requestResultBroadcast() {
             resultBroadcastRequested = true;
