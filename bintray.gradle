@@ -12,7 +12,7 @@ task javadoc(type: Javadoc) {
     source = android.sourceSets.main.java.srcDirs
     classpath += configurations.compile
     classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-    options.linksOffline("http://developer.android.com/reference","${android.sdkDirectory}/docs/reference");
+    options.linksOffline("https://developer.android.com/reference", "${android.sdkDirectory}/docs/reference");
     failOnError false
 }
 
@@ -54,6 +54,7 @@ bintray {
 
         version {
             name = libraryVersion
+            vcsTag = "v${libraryVersion}"
             // Optional. The passphrase for GPG signing'
             // gpg {
             //    sign = true //Determines whether to GPG sign the files. The default is false
