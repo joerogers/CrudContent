@@ -139,6 +139,7 @@ public abstract class BasicCRUDProvider extends ContentProvider {
     private final String authority;
 
 
+    @SuppressWarnings("WeakerAccess")
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({CONFLICT_ROLLBACK, CONFLICT_IGNORE, CONFLICT_REPLACE})
     public @interface ConflictAlgorithm {
@@ -295,7 +296,7 @@ public abstract class BasicCRUDProvider extends ContentProvider {
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
 
-        long id = -1;
+        long id;
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         db.acquireReference();
@@ -473,7 +474,7 @@ public abstract class BasicCRUDProvider extends ContentProvider {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         db.acquireReference();
 
-        Cursor cursor = null;
+        Cursor cursor;
         try {
             cursor = db.query(distinct, table, projection, useSelection, useSelectionArgs, null, null, sortOrder, limit);
             // Register the cursor with the requested URI so the caller will receive
@@ -659,6 +660,7 @@ public abstract class BasicCRUDProvider extends ContentProvider {
      * To disable or keep database open as long as possible use TRIM_MEMORY_COMPLETE or something larger.
      * @see ComponentCallbacks2
      */
+    @SuppressWarnings({"WeakerAccess", "SameReturnValue"})
     public int getDefaultTrimLevel() {
         return ComponentCallbacks2.TRIM_MEMORY_BACKGROUND;
     }
