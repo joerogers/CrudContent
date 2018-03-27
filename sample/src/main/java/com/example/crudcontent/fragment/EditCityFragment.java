@@ -121,7 +121,7 @@ public class EditCityFragment extends Fragment
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         binding = EditCityFragmentBinding.inflate(inflater, container, false);
@@ -192,7 +192,7 @@ public class EditCityFragment extends Fragment
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString(STATE_CITY, city);
         outState.putLong(STATE_STATE_ID, stateId);

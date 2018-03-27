@@ -20,14 +20,15 @@ package com.example.crudcontent.fragment;
 import android.content.Context;
 import android.database.Cursor;
 import android.databinding.DataBindingUtil;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 
 import com.example.crudcontent.adapter.CityAdapter;
 import com.example.crudcontent.databinding.CityListFragmentBinding;
@@ -72,7 +73,7 @@ public class CityListFragment extends Fragment
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         CityListFragmentBinding binding = CityListFragmentBinding.inflate(inflater, container, false);
@@ -106,8 +107,7 @@ public class CityListFragment extends Fragment
         super.onDetach();
     }
 
-    @SuppressWarnings("unused")
-    public void onCityClick(AdapterView<?> parent, View view, int position, long id) {
+    public void onCityClick(long id) {
         listener.editCity(id);
     }
 
@@ -151,15 +151,17 @@ public class CityListFragment extends Fragment
     }
 
     private void onCityLoadComplete(final Cursor cursor) {
+        View view = getView();
+        if (view == null) return;
 
-        CityListFragmentBinding binding = DataBindingUtil.getBinding(getView());
+        CityListFragmentBinding binding = DataBindingUtil.getBinding(view);
         if (binding == null) return;
 
         CityAdapter adapter = (CityAdapter) binding.list.getAdapter();
         adapter.swapCursor(cursor);
 
         // Show list now either with contents or via the empty view.
-        showList(binding, true);
+        showList(binding, Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN);
     }
 
     private void showList(CityListFragmentBinding binding, boolean showAnimation) {

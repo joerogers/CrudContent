@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion rootProject.compileSdkVersion
-    buildToolsVersion rootProject.buildToolsVersion
+    compileSdkVersion compile_sdk
+    buildToolsVersion build_tools
 
     defaultConfig {
         applicationId "com.example.crudcontent"
-        minSdkVersion rootProject.minSdkVersion
-        targetSdkVersion rootProject.compileSdkVersion
+        minSdkVersion min_sdk
+        targetSdkVersion target_sdk
         versionCode 1
         versionName "1.0"
         // Rely on support library for vector drawables
@@ -34,12 +34,12 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile "com.android.support:support-annotations:${rootProject.supportLibVersion}"
-    compile "com.android.support:support-v4:${rootProject.supportLibVersion}"
-    compile "com.android.support:appcompat-v7:${rootProject.supportLibVersion}"
-    compile "com.android.support:design:${rootProject.supportLibVersion}"
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "com.android.support:support-annotations:${supportLibVersion}"
+    implementation "com.android.support:support-v4:${supportLibVersion}"
+    implementation "com.android.support:appcompat-v7:${supportLibVersion}"
+    implementation "com.android.support:design:${supportLibVersion}"
 
     // Use this to compile directly with project
-    compile project(':crudcontent')
+    implementation project(':crudcontent')
 }

@@ -25,7 +25,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clipToPadding="false"
-                android:onItemClick="@{listeners::onCityClick}"
+                android:onItemClick="@{(parent, view, position, id)->listeners.onCityClick(id)}"
                 android:paddingBottom="8dp"
                 android:paddingTop="8dp"
                 tools:listitem="@layout/adapter_item_city"/>

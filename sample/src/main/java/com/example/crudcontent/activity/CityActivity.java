@@ -116,8 +116,7 @@ public class CityActivity extends AppCompatActivity
         startActivity(EditCityActivity.buildIntent(this, cityId));
     }
 
-    @SuppressWarnings("unused")   // Called via data binding
-    public void onAddCity(View view) {
+    public void onAddCity() {
         startActivity(EditCityActivity.buildIntent(this));
     }
 

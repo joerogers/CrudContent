@@ -75,7 +75,7 @@
             android:layout_gravity="bottom|end"
             android:layout_margin="16dp"
             android:contentDescription="@string/add_city"
-            android:onClick="@{listeners::onAddCity}"
+            android:onClick="@{(view)->listeners.onAddCity()}"
             app:srcCompat="@drawable/ic_add_24dp"/>
     </android.support.design.widget.CoordinatorLayout>
 </layout>
