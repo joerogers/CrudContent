@@ -1,6 +1,7 @@
 package com.example.crudtester.loader;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 
@@ -10,15 +11,16 @@ import java.io.PrintWriter;
 /**
  * Mock loader manager for validating the BasicCRUDLoader
  */
-public class MockLoaderManager<D> extends LoaderManager {
+public class MockLoaderManager extends LoaderManager {
 
     private boolean isInit = false;
     private boolean isRestart = false;
     private int loaderId = 0;
     private Object loaderCallbacks;
 
+    @NonNull
     @Override
-    public <D> Loader<D> initLoader(int id, Bundle args, LoaderCallbacks<D> callback) {
+    public <D> Loader<D> initLoader(int id, Bundle args, @NonNull LoaderCallbacks<D> callback) {
 
         // Simulate an init loader.
         isInit = true;
@@ -32,8 +34,9 @@ public class MockLoaderManager<D> extends LoaderManager {
         return loader;
     }
 
+    @NonNull
     @Override
-    public <D> Loader<D> restartLoader(int id, Bundle args, LoaderCallbacks<D> callback) {
+    public <D> Loader<D> restartLoader(int id, Bundle args, @NonNull LoaderCallbacks<D> callback) {
 
         // Not doing a "true" restart. Just simulating one by going through the create path.
         isRestart = true;
@@ -80,7 +83,7 @@ public class MockLoaderManager<D> extends LoaderManager {
 
     private class LoadCompleteListener<D> implements Loader.OnLoadCompleteListener<D> {
         @Override
-        public void onLoadComplete(Loader<D> loader, D data) {
+        public void onLoadComplete(@NonNull Loader<D> loader, D data) {
             // Shouldn't get here so throw an unsupported operation exception just in case
             throw new UnsupportedOperationException();
         }

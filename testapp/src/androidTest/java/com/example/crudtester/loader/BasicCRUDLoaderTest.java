@@ -8,7 +8,6 @@ import android.database.MatrixCursor;
 import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.annotation.UiThreadTest;
-import android.support.test.rule.UiThreadTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -25,13 +24,10 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
-import java.util.Arrays;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Test to ensure the BasicCRUDLoader creates the proper cursor loader
@@ -40,8 +36,6 @@ import static org.junit.Assert.assertTrue;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class BasicCRUDLoaderTest {
 
-    @Rule
-    public final UiThreadTestRule uiThreadTestRule = new UiThreadTestRule();
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
@@ -74,7 +68,7 @@ public class BasicCRUDLoaderTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         context = InstrumentationRegistry.getTargetContext();
         BasicCRUDLoader.enableLogging(true);
         mockLoaderManager = new MockLoaderManager();
@@ -82,7 +76,7 @@ public class BasicCRUDLoaderTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         context = null;
         mockLoaderManager = null;
         mockBasicCRUDLoaderCallback = null;
@@ -103,21 +97,21 @@ public class BasicCRUDLoaderTest {
                 .loaderId(LOADER_ID)
                 .initLoader();
 
-        assertNotNull(loader);
+        assertThat(loader, is(notNullValue()));
 
         // Validate expected loader manager methods called
-        assertEquals(LOADER_ID, mockLoaderManager.getLoaderId());
-        assertTrue(mockLoaderManager.isInit());
-        assertFalse(mockLoaderManager.isRestart());
-        assertNotNull(mockLoaderManager.getLoaderCallbacks());
+        assertThat(mockLoaderManager.getLoaderId(), is(LOADER_ID));
+        assertThat(mockLoaderManager.isInit(), is(true));
+        assertThat(mockLoaderManager.isRestart(), is(false));
+        assertThat(mockLoaderManager.getLoaderCallbacks(), is(notNullValue()));
 
         // Validate loader contains expected data
-        assertEquals(LOADER_ID, loader.getId());
-        assertEquals(testUri, loader.getUri());
-        assertNull(loader.getProjection());
-        assertNull(loader.getSelection());
-        assertNull(loader.getSelectionArgs());
-        assertNull(loader.getSortOrder());
+        assertThat(loader.getId(), is(LOADER_ID));
+        assertThat(loader.getUri(), is(testUri));
+        assertThat(loader.getProjection(), is(nullValue()));
+        assertThat(loader.getSelection(), is(nullValue()));
+        assertThat(loader.getSelectionArgs(), is(nullValue()));
+        assertThat(loader.getSortOrder(), is(nullValue()));
     }
 
     /**
@@ -138,21 +132,21 @@ public class BasicCRUDLoaderTest {
                 .loaderId(LOADER_ID)
                 .initLoader();
 
-        assertNotNull(loader);
+        assertThat(loader, is(notNullValue()));
 
         // Validate expected loader manager methods called
-        assertEquals(LOADER_ID, mockLoaderManager.getLoaderId());
-        assertTrue(mockLoaderManager.isInit());
-        assertFalse(mockLoaderManager.isRestart());
-        assertNotNull(mockLoaderManager.getLoaderCallbacks());
+        assertThat(mockLoaderManager.getLoaderId(), is(LOADER_ID));
+        assertThat(mockLoaderManager.isInit(), is(true));
+        assertThat(mockLoaderManager.isRestart(), is(false));
+        assertThat(mockLoaderManager.getLoaderCallbacks(), is(notNullValue()));
 
         // Validate loader contains expected data
-        assertEquals(LOADER_ID, loader.getId());
-        assertEquals(testUri, loader.getUri());
-        assertTrue(Arrays.equals(testProjection, loader.getProjection()));
-        assertEquals(testSelection, loader.getSelection());
-        assertTrue(Arrays.equals(testSelectionArgs, loader.getSelectionArgs()));
-        assertEquals(testOrderBy, loader.getSortOrder());
+        assertThat(loader.getId(), is(LOADER_ID));
+        assertThat(loader.getUri(), is(testUri));
+        assertThat(loader.getProjection(), is(testProjection));
+        assertThat(loader.getSelection(), is(testSelection));
+        assertThat(loader.getSelectionArgs(), is(testSelectionArgs));
+        assertThat(loader.getSortOrder(), is(testOrderBy));
     }
 
     /**
@@ -174,21 +168,21 @@ public class BasicCRUDLoaderTest {
                 .loaderId(LOADER_ID)
                 .initLoader();
 
-        assertNotNull(loader);
+        assertThat(loader, is(notNullValue()));
 
         // Validate expected loader manager methods called
-        assertEquals(LOADER_ID, mockLoaderManager.getLoaderId());
-        assertTrue(mockLoaderManager.isInit());
-        assertFalse(mockLoaderManager.isRestart());
-        assertNotNull(mockLoaderManager.getLoaderCallbacks());
+        assertThat(mockLoaderManager.getLoaderId(), is(LOADER_ID));
+        assertThat(mockLoaderManager.isInit(), is(true));
+        assertThat(mockLoaderManager.isRestart(), is(false));
+        assertThat(mockLoaderManager.getLoaderCallbacks(), is(notNullValue()));
 
         // Validate loader contains expected data
-        assertEquals(LOADER_ID, loader.getId());
-        assertEquals(ContentUris.withAppendedId(testUri, ROW_ID), loader.getUri());
-        assertTrue(Arrays.equals(testProjection, loader.getProjection()));
-        assertNull(loader.getSelection());
-        assertNull(loader.getSelectionArgs());
-        assertEquals(testOrderBy, loader.getSortOrder());
+        assertThat(loader.getId(), is(LOADER_ID));
+        assertThat(loader.getUri(), is(ContentUris.withAppendedId(testUri, ROW_ID)));
+        assertThat(loader.getProjection(), is(testProjection));
+        assertThat(loader.getSelection(), is(nullValue()));
+        assertThat(loader.getSelectionArgs(), is(nullValue()));
+        assertThat(loader.getSortOrder(), is(testOrderBy));
     }
 
     /**
@@ -205,21 +199,21 @@ public class BasicCRUDLoaderTest {
                 .loaderId(LOADER_ID)
                 .initLoader();
 
-        assertNotNull(loader);
+        assertThat(loader, is(notNullValue()));
 
         // Validate expected loader manager methods called
-        assertEquals(LOADER_ID, mockLoaderManager.getLoaderId());
-        assertTrue(mockLoaderManager.isInit());
-        assertFalse(mockLoaderManager.isRestart());
-        assertNotNull(mockLoaderManager.getLoaderCallbacks());
+        assertThat(mockLoaderManager.getLoaderId(), is(LOADER_ID));
+        assertThat(mockLoaderManager.isInit(), is(true));
+        assertThat(mockLoaderManager.isRestart(), is(false));
+        assertThat(mockLoaderManager.getLoaderCallbacks(), is(notNullValue()));
 
         // Validate loader contains expected data
-        assertEquals(LOADER_ID, loader.getId());
-        assertEquals(ContentUris.withAppendedId(testUri, ROW_ID), loader.getUri());
-        assertNull(loader.getProjection());
-        assertNull(loader.getSelection());
-        assertNull(loader.getSelectionArgs());
-        assertNull(loader.getSortOrder());
+        assertThat(loader.getId(), is(LOADER_ID));
+        assertThat(loader.getUri(), is(ContentUris.withAppendedId(testUri, ROW_ID)));
+        assertThat(loader.getProjection(), is(nullValue()));
+        assertThat(loader.getSelection(), is(nullValue()));
+        assertThat(loader.getSelectionArgs(), is(nullValue()));
+        assertThat(loader.getSortOrder(), is(nullValue()));
     }
 
     /**
@@ -237,21 +231,21 @@ public class BasicCRUDLoaderTest {
                 .loaderId(LOADER_ID)
                 .restartLoader();
 
-        assertNotNull(loader);
+        assertThat(loader, is(notNullValue()));
 
         // Validate expected loader manager methods called
-        assertEquals(LOADER_ID, mockLoaderManager.getLoaderId());
-        assertFalse(mockLoaderManager.isInit());
-        assertTrue(mockLoaderManager.isRestart());
-        assertNotNull(mockLoaderManager.getLoaderCallbacks());
+        assertThat(mockLoaderManager.getLoaderId(), is(LOADER_ID));
+        assertThat(mockLoaderManager.isInit(), is(false));
+        assertThat(mockLoaderManager.isRestart(), is(true));
+        assertThat(mockLoaderManager.getLoaderCallbacks(), is(notNullValue()));
 
         // Validate loader contains expected data
-        assertEquals(LOADER_ID, loader.getId());
-        assertEquals(testUri, loader.getUri());
-        assertNull(loader.getProjection());
-        assertNull(loader.getSelection());
-        assertNull(loader.getSelectionArgs());
-        assertNull(loader.getSortOrder());
+        assertThat(loader.getId(), is(LOADER_ID));
+        assertThat(loader.getUri(), is(testUri));
+        assertThat(loader.getProjection(), is(nullValue()));
+        assertThat(loader.getSelection(), is(nullValue()));
+        assertThat(loader.getSelectionArgs(), is(nullValue()));
+        assertThat(loader.getSortOrder(), is(nullValue()));
     }
 
     /**
@@ -273,21 +267,21 @@ public class BasicCRUDLoaderTest {
                 .loaderId(LOADER_ID)
                 .restartLoader();
 
-        assertNotNull(loader);
+        assertThat(loader, is(notNullValue()));
 
         // Validate expected loader manager methods called
-        assertEquals(LOADER_ID, mockLoaderManager.getLoaderId());
-        assertFalse(mockLoaderManager.isInit());
-        assertTrue(mockLoaderManager.isRestart());
-        assertNotNull(mockLoaderManager.getLoaderCallbacks());
+        assertThat(mockLoaderManager.getLoaderId(), is(LOADER_ID));
+        assertThat(mockLoaderManager.isInit(), is(false));
+        assertThat(mockLoaderManager.isRestart(), is(true));
+        assertThat(mockLoaderManager.getLoaderCallbacks(), is(notNullValue()));
 
         // Validate loader contains expected data
-        assertEquals(LOADER_ID, loader.getId());
-        assertEquals(testUri, loader.getUri());
-        assertTrue(Arrays.equals(testProjection, loader.getProjection()));
-        assertEquals(testSelection, loader.getSelection());
-        assertTrue(Arrays.equals(testSelectionArgs, loader.getSelectionArgs()));
-        assertEquals(testOrderBy, loader.getSortOrder());
+        assertThat(loader.getId(), is(LOADER_ID));
+        assertThat(loader.getUri(), is(testUri));
+        assertThat(loader.getProjection(), is(testProjection));
+        assertThat(loader.getSelection(), is(testSelection));
+        assertThat(loader.getSelectionArgs(), is(testSelectionArgs));
+        assertThat(loader.getSortOrder(), is(testOrderBy));
     }
 
     /**
@@ -306,28 +300,28 @@ public class BasicCRUDLoaderTest {
                 .orderBy(testOrderBy)
                 .callback(mockBasicCRUDLoaderCallback)
                 .loaderId(LOADER_ID)
-                .initLoader();
+                .restartLoader();
 
-        assertNotNull(loader);
+        assertThat(loader, is(notNullValue()));
 
         // Validate expected loader manager methods called
-        assertEquals(LOADER_ID, mockLoaderManager.getLoaderId());
-        assertTrue(mockLoaderManager.isInit());
-        assertFalse(mockLoaderManager.isRestart());
-        assertNotNull(mockLoaderManager.getLoaderCallbacks());
+        assertThat(mockLoaderManager.getLoaderId(), is(LOADER_ID));
+        assertThat(mockLoaderManager.isInit(), is(false));
+        assertThat(mockLoaderManager.isRestart(), is(true));
+        assertThat(mockLoaderManager.getLoaderCallbacks(), is(notNullValue()));
 
         // Validate loader contains expected data
-        assertEquals(LOADER_ID, loader.getId());
-        assertEquals(ContentUris.withAppendedId(testUri, ROW_ID), loader.getUri());
-        assertTrue(Arrays.equals(testProjection, loader.getProjection()));
-        assertNull(loader.getSelection());
-        assertNull(loader.getSelectionArgs());
-        assertEquals(testOrderBy, loader.getSortOrder());
+        assertThat(loader.getId(), is(LOADER_ID));
+        assertThat(loader.getUri(), is(ContentUris.withAppendedId(testUri, ROW_ID)));
+        assertThat(loader.getProjection(), is(testProjection));
+        assertThat(loader.getSelection(), is(nullValue()));
+        assertThat(loader.getSelectionArgs(), is(nullValue()));
+        assertThat(loader.getSortOrder(), is(testOrderBy));
     }
 
     @Test
     @UiThreadTest
-    public void test08TestLoadFinishedCallback() throws Exception {
+    public void test08TestLoadFinishedCallback() {
 
         CursorLoader loader = BasicCRUDLoader.newInstance(context, mockLoaderManager)
                 .forUri(testUri)
@@ -336,11 +330,11 @@ public class BasicCRUDLoaderTest {
                 .initLoader();
 
         // Ensure the callback has not yet been called
-        assertFalse(mockBasicCRUDLoaderCallback.isCalled());
+        assertThat(mockBasicCRUDLoaderCallback.isCalled(), is(false));
 
         @SuppressWarnings("unchecked")
         LoaderManager.LoaderCallbacks<Cursor> callbacks = (LoaderManager.LoaderCallbacks<Cursor>) mockLoaderManager.getLoaderCallbacks();
-        assertNotNull(callbacks);
+        assertThat(callbacks, is(notNullValue()));
 
         MatrixCursor cursor = new MatrixCursor(new String[]{"Column1"});
 
@@ -348,14 +342,14 @@ public class BasicCRUDLoaderTest {
         // cursor that was just built.
         callbacks.onLoadFinished(loader, cursor);
 
-        assertTrue(mockBasicCRUDLoaderCallback.isCalled());
-        assertEquals(LOADER_ID, mockBasicCRUDLoaderCallback.getLoaderId());
-        assertEquals(cursor, mockBasicCRUDLoaderCallback.getCursor());
+        assertThat(mockBasicCRUDLoaderCallback.isCalled(), is(true));
+        assertThat(mockBasicCRUDLoaderCallback.getLoaderId(), is(LOADER_ID));
+        assertThat(mockBasicCRUDLoaderCallback.getCursor(), is((Cursor) cursor));
     }
 
     @Test
     @UiThreadTest
-    public void test09TestLoadResetCallback() throws Exception {
+    public void test09TestLoadResetCallback() {
 
         CursorLoader loader = BasicCRUDLoader.newInstance(context, mockLoaderManager)
                 .forUri(testUri)
@@ -364,18 +358,18 @@ public class BasicCRUDLoaderTest {
                 .initLoader();
 
         // Ensure the callback has not yet been called
-        assertFalse(mockBasicCRUDLoaderCallback.isCalled());
+        assertThat(mockBasicCRUDLoaderCallback.isCalled(), is(false));
 
         @SuppressWarnings("unchecked")
         LoaderManager.LoaderCallbacks<Cursor> callbacks = (LoaderManager.LoaderCallbacks<Cursor>) mockLoaderManager.getLoaderCallbacks();
-        assertNotNull(callbacks);
+        assertThat(callbacks, is(notNullValue()));
 
         // Simulate a loader reset. The loader id should be set and cursor is null
         callbacks.onLoaderReset(loader);
 
-        assertTrue(mockBasicCRUDLoaderCallback.isCalled());
-        assertEquals(LOADER_ID, mockBasicCRUDLoaderCallback.getLoaderId());
-        assertNull(mockBasicCRUDLoaderCallback.getCursor());
+        assertThat(mockBasicCRUDLoaderCallback.isCalled(), is(true));
+        assertThat(mockBasicCRUDLoaderCallback.getLoaderId(), is(LOADER_ID));
+        assertThat(mockBasicCRUDLoaderCallback.getCursor(), is(nullValue()));
     }
 
     /**
@@ -394,30 +388,31 @@ public class BasicCRUDLoaderTest {
                 .loaderId(LOADER_ID)
                 .initLoader();
 
-        assertNotNull(loader);
+        assertThat(loader, is(notNullValue()));
 
         // Validate expected loader manager methods called
-        assertEquals(LOADER_ID, mockLoaderManager.getLoaderId());
-        assertTrue(mockLoaderManager.isInit());
-        assertFalse(mockLoaderManager.isRestart());
-        assertNotNull(mockLoaderManager.getLoaderCallbacks());
+        assertThat(mockLoaderManager.getLoaderId(), is(LOADER_ID));
+        assertThat(mockLoaderManager.isInit(), is(true));
+        assertThat(mockLoaderManager.isRestart(), is(false));
+        assertThat(mockLoaderManager.getLoaderCallbacks(), is(notNullValue()));
 
         // Validate loader contains expected data
-        assertEquals(LOADER_ID, loader.getId());
-        assertNull(loader.getProjection());
-        assertNull(loader.getSelection());
-        assertNull(loader.getSelectionArgs());
-        assertNull(loader.getSortOrder());
+        assertThat(loader.getId(), is(LOADER_ID));
+        assertThat(loader.getProjection(), is(nullValue()));
+        assertThat(loader.getSelection(), is(nullValue()));
+        assertThat(loader.getSelectionArgs(), is(nullValue()));
+        assertThat(loader.getSortOrder(), is(nullValue()));
 
         // Validate the URI
         Uri uri = loader.getUri();
-        assertNotNull(uri);
-        assertEquals(ContentResolver.SCHEME_CONTENT, uri.getScheme());
-        assertEquals(AUTHORITY, uri.getAuthority());
-        assertEquals(TABLE, uri.getLastPathSegment());
-        assertNotNull(uri.getQueryParameterNames());
-        assertEquals(1, uri.getQueryParameterNames().size());
-        assertTrue(uri.getBooleanQueryParameter(BasicCRUDProvider.DISTINCT_PARAMETER, false));
+        assertThat(uri, is(notNullValue()));
+        assertThat(uri.getScheme(), is(ContentResolver.SCHEME_CONTENT));
+        assertThat(uri.getAuthority(), is(AUTHORITY));
+        assertThat(uri.getLastPathSegment(), is(TABLE));
+        assertThat(uri.getQueryParameterNames(), is(notNullValue()));
+        assertThat(uri.getQueryParameterNames().size(), is(1));
+        assertThat(uri.getBooleanQueryParameter(BasicCRUDProvider.DISTINCT_PARAMETER, false), is(true));
+        assertThat(uri.getQueryParameter(BasicCRUDProvider.LIMIT_PARAMETER), is(nullValue()));
     }
 
     /**
@@ -436,30 +431,31 @@ public class BasicCRUDLoaderTest {
                 .loaderId(LOADER_ID)
                 .restartLoader();
 
-        assertNotNull(loader);
+        assertThat(loader, is(notNullValue()));
 
         // Validate expected loader manager methods called
-        assertEquals(LOADER_ID, mockLoaderManager.getLoaderId());
-        assertFalse(mockLoaderManager.isInit());
-        assertTrue(mockLoaderManager.isRestart());
-        assertNotNull(mockLoaderManager.getLoaderCallbacks());
+        assertThat(mockLoaderManager.getLoaderId(), is(LOADER_ID));
+        assertThat(mockLoaderManager.isInit(), is(false));
+        assertThat(mockLoaderManager.isRestart(), is(true));
+        assertThat(mockLoaderManager.getLoaderCallbacks(), is(notNullValue()));
 
         // Validate loader contains expected data
-        assertEquals(LOADER_ID, loader.getId());
-        assertNull(loader.getProjection());
-        assertNull(loader.getSelection());
-        assertNull(loader.getSelectionArgs());
-        assertNull(loader.getSortOrder());
+        assertThat(loader.getId(), is(LOADER_ID));
+        assertThat(loader.getProjection(), is(nullValue()));
+        assertThat(loader.getSelection(), is(nullValue()));
+        assertThat(loader.getSelectionArgs(), is(nullValue()));
+        assertThat(loader.getSortOrder(), is(nullValue()));
 
         // Validate the URI
         Uri uri = loader.getUri();
-        assertNotNull(uri);
-        assertEquals(ContentResolver.SCHEME_CONTENT, uri.getScheme());
-        assertEquals(AUTHORITY, uri.getAuthority());
-        assertEquals(TABLE, uri.getLastPathSegment());
-        assertNotNull(uri.getQueryParameterNames());
-        assertEquals(1, uri.getQueryParameterNames().size());
-        assertEquals(testLimit, uri.getQueryParameter(BasicCRUDProvider.LIMIT_PARAMETER));
+        assertThat(uri, is(notNullValue()));
+        assertThat(uri.getScheme(), is(ContentResolver.SCHEME_CONTENT));
+        assertThat(uri.getAuthority(), is(AUTHORITY));
+        assertThat(uri.getLastPathSegment(), is(TABLE));
+        assertThat(uri.getQueryParameterNames(), is(notNullValue()));
+        assertThat(uri.getQueryParameterNames().size(), is(1));
+        assertThat(uri.getBooleanQueryParameter(BasicCRUDProvider.DISTINCT_PARAMETER, false), is(false));
+        assertThat(uri.getQueryParameter(BasicCRUDProvider.LIMIT_PARAMETER), is(testLimit));
     }
 
     /**
@@ -479,31 +475,31 @@ public class BasicCRUDLoaderTest {
                 .loaderId(LOADER_ID)
                 .restartLoader();
 
-        assertNotNull(loader);
+        assertThat(loader, is(notNullValue()));
 
         // Validate expected loader manager methods called
-        assertEquals(LOADER_ID, mockLoaderManager.getLoaderId());
-        assertFalse(mockLoaderManager.isInit());
-        assertTrue(mockLoaderManager.isRestart());
-        assertNotNull(mockLoaderManager.getLoaderCallbacks());
+        assertThat(mockLoaderManager.getLoaderId(), is(LOADER_ID));
+        assertThat(mockLoaderManager.isInit(), is(false));
+        assertThat(mockLoaderManager.isRestart(), is(true));
+        assertThat(mockLoaderManager.getLoaderCallbacks(), is(notNullValue()));
 
         // Validate loader contains expected data
-        assertEquals(LOADER_ID, loader.getId());
-        assertNull(loader.getProjection());
-        assertNull(loader.getSelection());
-        assertNull(loader.getSelectionArgs());
-        assertNull(loader.getSortOrder());
+        assertThat(loader.getId(), is(LOADER_ID));
+        assertThat(loader.getProjection(), is(nullValue()));
+        assertThat(loader.getSelection(), is(nullValue()));
+        assertThat(loader.getSelectionArgs(), is(nullValue()));
+        assertThat(loader.getSortOrder(), is(nullValue()));
 
         // Validate the URI
         Uri uri = loader.getUri();
-        assertNotNull(uri);
-        assertEquals(ContentResolver.SCHEME_CONTENT, uri.getScheme());
-        assertEquals(AUTHORITY, uri.getAuthority());
-        assertEquals(TABLE, uri.getLastPathSegment());
-        assertNotNull(uri.getQueryParameterNames());
-        assertEquals(2, uri.getQueryParameterNames().size());
-        assertTrue(uri.getBooleanQueryParameter(BasicCRUDProvider.DISTINCT_PARAMETER, false));
-        assertEquals(testLimit, uri.getQueryParameter(BasicCRUDProvider.LIMIT_PARAMETER));
+        assertThat(uri, is(notNullValue()));
+        assertThat(uri.getScheme(), is(ContentResolver.SCHEME_CONTENT));
+        assertThat(uri.getAuthority(), is(AUTHORITY));
+        assertThat(uri.getLastPathSegment(), is(TABLE));
+        assertThat(uri.getQueryParameterNames(), is(notNullValue()));
+        assertThat(uri.getQueryParameterNames().size(), is(2));
+        assertThat(uri.getBooleanQueryParameter(BasicCRUDProvider.DISTINCT_PARAMETER, false), is(true));
+        assertThat(uri.getQueryParameter(BasicCRUDProvider.LIMIT_PARAMETER), is(testLimit));
     }
 
     /**
@@ -525,34 +521,34 @@ public class BasicCRUDLoaderTest {
                 .loaderId(LOADER_ID)
                 .restartLoader();
 
-        assertNotNull(loader);
+        assertThat(loader, is(notNullValue()));
 
         // Validate expected loader manager methods called
-        assertEquals(LOADER_ID, mockLoaderManager.getLoaderId());
-        assertFalse(mockLoaderManager.isInit());
-        assertTrue(mockLoaderManager.isRestart());
-        assertNotNull(mockLoaderManager.getLoaderCallbacks());
+        assertThat(mockLoaderManager.getLoaderId(), is(LOADER_ID));
+        assertThat(mockLoaderManager.isInit(), is(false));
+        assertThat(mockLoaderManager.isRestart(), is(true));
+        assertThat(mockLoaderManager.getLoaderCallbacks(), is(notNullValue()));
 
         // Validate loader contains expected data
-        assertEquals(LOADER_ID, loader.getId());
-        assertNull(loader.getProjection());
-        assertNull(loader.getSelection());
-        assertNull(loader.getSelectionArgs());
-        assertNull(loader.getSortOrder());
+        assertThat(loader.getId(), is(LOADER_ID));
+        assertThat(loader.getProjection(), is(nullValue()));
+        assertThat(loader.getSelection(), is(nullValue()));
+        assertThat(loader.getSelectionArgs(), is(nullValue()));
+        assertThat(loader.getSortOrder(), is(nullValue()));
 
         // Validate the URI
         Uri uri = loader.getUri();
-        assertNotNull(uri);
-        assertEquals(ContentResolver.SCHEME_CONTENT, uri.getScheme());
-        assertEquals(AUTHORITY, uri.getAuthority());
-        assertEquals(TABLE, uri.getLastPathSegment());
-        assertNotNull(uri.getQueryParameterNames());
-        assertEquals(2, uri.getQueryParameterNames().size());
-        assertTrue(uri.getBooleanQueryParameter(BasicCRUDProvider.DISTINCT_PARAMETER, false));
-        assertEquals(testLimit, uri.getQueryParameter(BasicCRUDProvider.LIMIT_PARAMETER));
+        assertThat(uri, is(notNullValue()));
+        assertThat(uri.getScheme(), is(ContentResolver.SCHEME_CONTENT));
+        assertThat(uri.getAuthority(), is(AUTHORITY));
+        assertThat(uri.getLastPathSegment(), is(TABLE));
+        assertThat(uri.getQueryParameterNames(), is(notNullValue()));
+        assertThat(uri.getQueryParameterNames().size(), is(2));
+        assertThat(uri.getBooleanQueryParameter(BasicCRUDProvider.DISTINCT_PARAMETER, false), is(true));
+        assertThat(uri.getQueryParameter(BasicCRUDProvider.LIMIT_PARAMETER), is(testLimit));
 
         // Junk should be removed...
-        assertNull(uri.getQueryParameter("Junk"));
+        assertThat(uri.getQueryParameter("Junk"), is(nullValue()));
     }
 
     /**
@@ -650,21 +646,21 @@ public class BasicCRUDLoaderTest {
                 .callback(mockBasicCRUDLoaderCallback)
                 .initLoader();
 
-        assertNotNull(loader);
+        assertThat(loader, is(notNullValue()));
 
         // Validate expected loader manager methods called
-        assertEquals(BasicCRUDLoader.DEFAULT_LOADER_ID, mockLoaderManager.getLoaderId());
-        assertTrue(mockLoaderManager.isInit());
-        assertFalse(mockLoaderManager.isRestart());
-        assertNotNull(mockLoaderManager.getLoaderCallbacks());
+        assertThat(mockLoaderManager.getLoaderId(), is(BasicCRUDLoader.DEFAULT_LOADER_ID));
+        assertThat(mockLoaderManager.isInit(), is(true));
+        assertThat(mockLoaderManager.isRestart(), is(false));
+        assertThat(mockLoaderManager.getLoaderCallbacks(), is(notNullValue()));
 
         // Validate loader contains expected data
-        assertEquals(BasicCRUDLoader.DEFAULT_LOADER_ID, loader.getId());
-        assertEquals(testUri, loader.getUri());
-        assertNull(loader.getProjection());
-        assertNull(loader.getSelection());
-        assertNull(loader.getSelectionArgs());
-        assertNull(loader.getSortOrder());
+        assertThat(loader.getId(), is(BasicCRUDLoader.DEFAULT_LOADER_ID));
+        assertThat(loader.getUri(), is(testUri));
+        assertThat(loader.getProjection(), is(nullValue()));
+        assertThat(loader.getSelection(), is(nullValue()));
+        assertThat(loader.getSelectionArgs(), is(nullValue()));
+        assertThat(loader.getSortOrder(), is(nullValue()));
     }
 }
 
