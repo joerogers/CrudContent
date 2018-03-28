@@ -69,13 +69,8 @@ public class DataUtilities {
 
     public static ContentValues[] mergeValues(ContentValues[] targetArray, ContentValues source) {
         for (ContentValues target : targetArray) {
-            mergeValues(target, source);
+            target.putAll(source);
         }
         return targetArray;
-    }
-
-    public static ContentValues mergeValues(ContentValues target, ContentValues source) {
-        target.putAll(source);
-        return target;
     }
 }

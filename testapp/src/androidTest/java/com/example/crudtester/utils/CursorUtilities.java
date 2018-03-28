@@ -24,10 +24,10 @@ import android.support.annotation.NonNull;
 import java.util.Map;
 import java.util.Set;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Utilities to help validate a cursor against expected content values
@@ -35,19 +35,19 @@ import static junit.framework.Assert.assertTrue;
 public class CursorUtilities {
 
     public static void validateCursor(String error, Cursor valueCursor, ContentValues expectedValues, long id) {
-        assertNotNull("Null cursor returned." + error, valueCursor);
-        assertTrue("Empty cursor returned. " + error, valueCursor.moveToFirst());
+        assertThat(valueCursor, is(notNullValue()));
+        assertThat("Empty cursor returned. " + error, valueCursor.moveToFirst(), is(true));
         validateId(error, valueCursor, id);
         validateCurrentRecord(error, valueCursor, expectedValues);
 
         // Move the cursor to demonstrate that there is only one record in the database
-        assertFalse("Error: More than one record returned in cursor. " + error, valueCursor.moveToNext());
+        assertThat("Error: More than one record returned in cursor. " + error, valueCursor.moveToNext(), is(false));
     }
 
     public static void validateCursor(String error, String column, Cursor valueCursor, ContentValues[] expectedValues) {
-        assertNotNull("Null cursor returned." + error, valueCursor);
-        assertEquals("Row count mismatched." + error, expectedValues.length, valueCursor.getCount());
-        assertTrue("Empty cursor returned. " + error, valueCursor.moveToFirst());
+        assertThat(valueCursor, is(notNullValue()));
+        assertThat("Row count mismatched." + error, valueCursor.getCount(), is(expectedValues.length));
+        assertThat("Empty cursor returned. " + error, valueCursor.moveToFirst(), is(true));
 
         int primaryIndex = valueCursor.getColumnIndex(column);
 
@@ -60,17 +60,17 @@ public class CursorUtilities {
                     break;
                 }
             }
-            assertTrue("Row not found", rowFound);
+            assertThat("Row not found", rowFound, is(true));
         } while (valueCursor.moveToNext());
     }
 
     public static void ensureCursorsMatchExcludingId(String error,
                                                      @NonNull Cursor cursor1,
                                                      @NonNull Cursor cursor2) {
-        assertEquals("Row count mismatched." + error, cursor1.getCount(), cursor2.getCount());
-        assertEquals("Column count mismatched" + error, cursor1.getColumnCount(), cursor2.getColumnCount());
-        assertTrue("Empty cursor returned. " + error, cursor1.moveToFirst());
-        assertTrue("Empty cursor returned. " + error, cursor2.moveToFirst());
+        assertThat("Row count mismatched." + error, cursor1.getCount(), is(cursor2.getCount()));
+        assertThat("Column count mismatched" + error, cursor1.getColumnCount(), is(cursor2.getColumnCount()));
+        assertThat("Empty cursor returned. " + error, cursor1.moveToFirst(), is(true));
+        assertThat("Empty cursor returned. " + error, cursor2.moveToFirst(), is(true));
 
         int count = cursor1.getColumnCount();
         for (int i = 0; i < count; ++i) {
@@ -80,18 +80,18 @@ public class CursorUtilities {
             String value2 = cursor2.getString(index);
 
             if (BaseColumns._ID.equals(columnName)) {
-                assertFalse(value1.equals(value2));
+                assertThat(value1, is(not(value2)));
             }
             else {
-                assertEquals(value1, value2);
+                assertThat(value1, is(value2));
             }
         }
     }
 
     private static void validateId(String error, Cursor valueCursor, long id) {
         int idx = valueCursor.getColumnIndex(BaseColumns._ID);
-        assertFalse("Column '" + BaseColumns._ID + "' not found. " + error, idx == -1);
-        assertEquals("Id does not match " + error, id, valueCursor.getLong(idx));
+        assertThat("Column '" + BaseColumns._ID + "' not found. " + error, idx, is(not(-1)));
+        assertThat("Id does not match " + error, valueCursor.getLong(idx), is(id));
     }
 
     private static void validateCurrentRecord(String error, Cursor valueCursor, ContentValues expectedValues) {
@@ -99,17 +99,17 @@ public class CursorUtilities {
         for (Map.Entry<String, Object> entry : valueSet) {
             String columnName = entry.getKey();
             int idx = valueCursor.getColumnIndex(columnName);
-            assertFalse("Column '" + columnName + "' not found. " + error, idx == -1);
+            assertThat("Column '" + columnName + "' not found. " + error, idx, is(not(-1)));
             String expectedValue = entry.getValue().toString();
             if (valueCursor.getType(idx) != Cursor.FIELD_TYPE_FLOAT) {
-                assertEquals("Value '" + entry.getValue().toString() +
+                assertThat("Value '" + entry.getValue().toString() +
                         "' did not match the expected value '" +
-                        expectedValue + "'. " + error, expectedValue, valueCursor.getString(idx));
+                        expectedValue + "'. " + error, valueCursor.getString(idx), is(expectedValue));
             }
             else {
-                assertEquals("Value '" + entry.getValue().toString() +
+                assertThat("Value '" + entry.getValue().toString() +
                         "' did not match the expected value '" +
-                        expectedValue + "'. " + error, expectedValue, Double.toString(valueCursor.getDouble(idx)));
+                        expectedValue + "'. " + error, Double.toString(valueCursor.getDouble(idx)), is(expectedValue));
             }
         }
     }

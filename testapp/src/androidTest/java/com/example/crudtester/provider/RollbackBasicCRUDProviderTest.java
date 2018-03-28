@@ -31,10 +31,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 /**
  * Test the content provider using the ROLLBACK conflict algorithm
  */
-@SuppressWarnings("JUnit4AnnotatedMethodInJUnit3TestCase")
 @RunWith(AndroidJUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class RollbackBasicCRUDProviderTest extends BaseBasicCRUDProviderTest {
@@ -106,27 +110,28 @@ public class RollbackBasicCRUDProviderTest extends BaseBasicCRUDProviderTest {
     public void test05InsertConflicts() {
         // Prep by inserting data
         ContentValues insertData = DataUtilities.insertUser1();
-        Uri uri = getMockContentResolver().insert(getUri(), insertData);
-        assertNotNull(uri);
+        Uri uri = providerTestRule.getResolver().insert(getUri(), insertData);
+        assertThat(uri, is(notNullValue()));
 
         long id = ContentUris.parseId(uri);
 
-        Cursor cursor = getMockContentResolver().query(uri, null, null, null, null);
-        assertNotNull(cursor);
-        CursorUtilities.validateCursor("Insert", cursor, insertData, id);
-        cursor.close();
+        //noinspection ConstantConditions
+        try (Cursor cursor = providerTestRule.getResolver().query(uri, null, null, null, null)) {
+            assertThat(cursor, is(notNullValue()));
+            CursorUtilities.validateCursor("Insert", cursor, insertData, id);
+        }
 
         // Attempt to insert the data again.
 
         // Inserting same data again. Uri should be null
-        Uri conflictUri = getMockContentResolver().insert(getUri(), insertData);
-        assertNull(conflictUri);
+        Uri conflictUri = providerTestRule.getResolver().insert(getUri(), insertData);
+        assertThat(conflictUri, is(nullValue()));
 
         // Verify the data is "unchanged" in the database
-        cursor = getMockContentResolver().query(uri, null, null, null, null);
-        assertNotNull(cursor);
-        CursorUtilities.validateCursor("Verify after conflict", cursor, insertData, id);
-        cursor.close();
+        try (Cursor cursor = providerTestRule.getResolver().query(uri, null, null, null, null)) {
+            assertThat(cursor, is(notNullValue()));
+            CursorUtilities.validateCursor("Verify after conflict", cursor, insertData, id);
+        }
     }
 
     /**
@@ -140,25 +145,25 @@ public class RollbackBasicCRUDProviderTest extends BaseBasicCRUDProviderTest {
     public void test06BulkInsertConflicts() {
         // Prep by inserting data
         ContentValues[] insertData = DataUtilities.insertBulkUsers();
-        int rows = getMockContentResolver().bulkInsert(getUri(), insertData);
-        assertEquals(insertData.length, rows);
+        int rows = providerTestRule.getResolver().bulkInsert(getUri(), insertData);
+        assertThat(rows, is(insertData.length));
 
-        Cursor cursor = getMockContentResolver().query(getUri(), null, null, null, null);
-        assertNotNull(cursor);
-        CursorUtilities.validateCursor("Bulk Insert", getUniqueColumn(), cursor, insertData);
-        cursor.close();
+        try (Cursor cursor = providerTestRule.getResolver().query(getUri(), null, null, null, null)) {
+            assertThat(cursor, is(notNullValue()));
+            CursorUtilities.validateCursor("Bulk Insert", getUniqueColumn(), cursor, insertData);
+        }
 
         // Attempt to insert the data again.
 
         // Inserting same data again. Rows will be 0 to indicate an error occurred inserting
-        rows = getMockContentResolver().bulkInsert(getUri(), insertData);
-        assertEquals(0, rows);
+        rows = providerTestRule.getResolver().bulkInsert(getUri(), insertData);
+        assertThat(rows, is(0));
 
         // Verify the data is "unchanged" in the database
-        cursor = getMockContentResolver().query(getUri(), null, null, null, null);
-        assertNotNull(cursor);
-        CursorUtilities.validateCursor("Verify after conflict", getUniqueColumn(), cursor, insertData);
-        cursor.close();
+        try (Cursor cursor = providerTestRule.getResolver().query(getUri(), null, null, null, null)) {
+            assertThat(cursor, is(notNullValue()));
+            CursorUtilities.validateCursor("Verify after conflict", getUniqueColumn(), cursor, insertData);
+        }
     }
 
     /**
@@ -173,28 +178,29 @@ public class RollbackBasicCRUDProviderTest extends BaseBasicCRUDProviderTest {
     public void test07BulkInsertPartialConflicts() {
         // Prep by inserting data. This data wil conflict on 2nd row of bulk update
         ContentValues insertData = DataUtilities.insertUser2();
-        Uri uri = getMockContentResolver().insert(getUri(), insertData);
-        assertNotNull(uri);
+        Uri uri = providerTestRule.getResolver().insert(getUri(), insertData);
+        assertThat(uri, is(notNullValue()));
 
         long id = ContentUris.parseId(uri);
 
-        Cursor cursor = getMockContentResolver().query(uri, null, null, null, null);
-        assertNotNull(cursor);
-        CursorUtilities.validateCursor("Insert", cursor, insertData, id);
-        cursor.close();
+        //noinspection ConstantConditions
+        try (Cursor cursor = providerTestRule.getResolver().query(uri, null, null, null, null)) {
+            assertThat(cursor, is(notNullValue()));
+            CursorUtilities.validateCursor("Insert", cursor, insertData, id);
+        }
 
         // Attempt to bulk insert data where the 2nd row conflicts
 
         // Rows will be 0 to indicate an error occurred inserting
         ContentValues[] bulkInsertData = DataUtilities.insertBulkUsers();
-        int rows = getMockContentResolver().bulkInsert(getUri(), bulkInsertData);
-        assertEquals(0, rows);
+        int rows = providerTestRule.getResolver().bulkInsert(getUri(), bulkInsertData);
+        assertThat(rows, is(0));
 
         // Verify the data is "unchanged" in the database. Ie should only be one row...
-        cursor = getMockContentResolver().query(getUri(), null, null, null, null);
-        assertNotNull(cursor);
-        CursorUtilities.validateCursor("Verify after conflict", getUniqueColumn(), cursor, new ContentValues[]{insertData});
-        cursor.close();
+        try (Cursor cursor = providerTestRule.getResolver().query(getUri(), null, null, null, null)) {
+            assertThat(cursor, is(notNullValue()));
+            CursorUtilities.validateCursor("Verify after conflict", getUniqueColumn(), cursor, new ContentValues[]{insertData});
+        }
     }
 
     /**
@@ -209,25 +215,25 @@ public class RollbackBasicCRUDProviderTest extends BaseBasicCRUDProviderTest {
     public void test08UpdateConflicts() {
         // Prep by inserting data
         ContentValues[] insertData = DataUtilities.insertBulkUsers();
-        int rows = getMockContentResolver().bulkInsert(getUri(), insertData);
-        assertEquals(insertData.length, rows);
+        int rows = providerTestRule.getResolver().bulkInsert(getUri(), insertData);
+        assertThat(rows, is(insertData.length));
 
-        Cursor cursor = getMockContentResolver().query(getUri(), null, null, null, null);
-        assertNotNull(cursor);
-        CursorUtilities.validateCursor("Bulk Insert", getUniqueColumn(), cursor, insertData);
-        cursor.close();
+        try (Cursor cursor = providerTestRule.getResolver().query(getUri(), null, null, null, null)) {
+            assertThat(cursor, is(notNullValue()));
+            CursorUtilities.validateCursor("Bulk Insert", getUniqueColumn(), cursor, insertData);
+        }
 
         // Attempt to update data to have same data on all rows.
 
         // Rows will be 0 to indicate an error occurred updating
         ContentValues updateData = DataUtilities.updateDataPossibleConflict();
-        rows = getMockContentResolver().update(getUri(), updateData, null, null);
-        assertEquals(0, rows);
+        rows = providerTestRule.getResolver().update(getUri(), updateData, null, null);
+        assertThat(rows, is(0));
 
         // Verify the data is "unchanged" in the database, both rows still exist as inserted.
-        cursor = getMockContentResolver().query(getUri(), null, null, null, null);
-        assertNotNull(cursor);
-        CursorUtilities.validateCursor("Verify after conflict", getUniqueColumn(), cursor, insertData);
-        cursor.close();
+        try (Cursor cursor = providerTestRule.getResolver().query(getUri(), null, null, null, null)) {
+            assertThat(cursor, is(notNullValue()));
+            CursorUtilities.validateCursor("Verify after conflict", getUniqueColumn(), cursor, insertData);
+        }
     }
 }
