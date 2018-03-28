@@ -38,10 +38,10 @@ import org.junit.runners.MethodSorters;
 
 import java.util.concurrent.CancellationException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Test BasicCRUInsertTask, uses a mock content provider as actual interaction
@@ -82,7 +82,7 @@ public class BasicCRUDInsertTaskTest {
     @Test
     public void test01Insert() throws Exception {
 
-        assertNull("Intent not null", receiver.getIntent());
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
 
         BasicCRUDInsertTask task = new BasicCRUDInsertTask.Builder(context)
                 .forUri(URI)
@@ -93,21 +93,21 @@ public class BasicCRUDInsertTaskTest {
         task.get();
 
         Thread.sleep(5);
-        assertNotNull("Intent null", receiver.getIntent());
+        assertThat("Intent null", receiver.getIntent(), is(notNullValue()));
 
         Uri uri = receiver.getIntent().getParcelableExtra(BasicCRUDInsertTask.EXTRA_URI);
-        assertNotNull("Uri null", uri);
+        assertThat("Uri null", uri, is(notNullValue()));
         long id = ContentUris.parseId(uri);
-        assertEquals("Invalid id", TaskMockContentProvider.INSERT_ID_RESULT, id);
+        assertThat("Invalid id", id, is(TaskMockContentProvider.INSERT_ID_RESULT));
 
         int rows = receiver.getIntent().getIntExtra(BasicCRUDInsertTask.EXTRA_ROWS, 0);
-        assertEquals("Incorrect rows", 1, rows);
+        assertThat("Incorrect rows", rows, is(1));
     }
 
     @Test
     public void test02BulkInsert() throws Exception {
 
-        assertNull("Intent not null", receiver.getIntent());
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
 
         ContentValues[] valuesArray = new ContentValues[2];
         valuesArray[0] = new ContentValues();
@@ -122,18 +122,18 @@ public class BasicCRUDInsertTaskTest {
         task.get();
 
         Thread.sleep(5);
-        assertNotNull("Intent null", receiver.getIntent());
+        assertThat("Intent null", receiver.getIntent(), is(notNullValue()));
 
         Uri uri = receiver.getIntent().getParcelableExtra(BasicCRUDInsertTask.EXTRA_URI);
-        assertNull("Uri not null", uri);
+        assertThat("Uri not null", uri, is(nullValue()));
 
         int rows = receiver.getIntent().getIntExtra(BasicCRUDInsertTask.EXTRA_ROWS, 0);
-        assertEquals("Incorrect rows", valuesArray.length, rows);
+        assertThat("Incorrect rows", rows, is(valuesArray.length));
     }
 
     @Test
     public void test03InsertCancelled() throws Exception {
-        assertNull("Intent not null", receiver.getIntent());
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
 
         boolean cancelled = false;
         BasicCRUDInsertTask task = new BasicCRUDInsertTask.Builder(context)
@@ -142,20 +142,20 @@ public class BasicCRUDInsertTaskTest {
                 .start();
 
         try {
-            assertTrue(task.cancel(false));
+            assertThat(task.cancel(false), is(true));
             task.get();
         }
         catch (CancellationException e) {
             cancelled = true;
         }
 
-        assertNull("Intent not null", receiver.getIntent());
-        assertTrue("Task not cancelled", cancelled);
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
+        assertThat("Task not cancelled", cancelled, is(true));
     }
 
     @Test
     public void test04InsertWithBroadcastCancelled() throws Exception {
-        assertNull("Intent not null", receiver.getIntent());
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
 
         boolean cancelled = false;
         BasicCRUDInsertTask task = new BasicCRUDInsertTask.Builder(context)
@@ -165,20 +165,20 @@ public class BasicCRUDInsertTaskTest {
                 .start();
 
         try {
-            assertTrue(task.cancel(false));
+            assertThat(task.cancel(false), is(true));
             task.get();
         }
         catch (CancellationException e) {
             cancelled = true;
         }
 
-        assertNull("Intent not null", receiver.getIntent());
-        assertTrue("Task not cancelled", cancelled);
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
+        assertThat("Task not cancelled", cancelled, is(true));
     }
 
     @Test
     public void test05InsertNoBroadcast() throws Exception {
-        assertNull("Intent not null", receiver.getIntent());
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
 
         BasicCRUDInsertTask task = new BasicCRUDInsertTask.Builder(context)
                 .forUri(URI)
@@ -188,31 +188,31 @@ public class BasicCRUDInsertTaskTest {
         task.get();
 
         Thread.sleep(5);
-        assertNull("Intent not null", receiver.getIntent());
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
     }
 
     @Test(expected = IllegalStateException.class)
-    public void test06NoContentValuesForInsert() throws Exception {
+    public void test06NoContentValuesForInsert() {
 
         BasicCRUDInsertTask task = new BasicCRUDInsertTask.Builder(context)
                 .forUri(URI)
                 .start();
 
-        assertNull("Task not null", task);
+        assertThat("Task not null", task, is(nullValue()));
     }
 
     @Test(expected = IllegalStateException.class)
-    public void test07NoUriForInsert() throws Exception {
+    public void test07NoUriForInsert() {
 
         BasicCRUDInsertTask task = new BasicCRUDInsertTask.Builder(context)
                 .usingValues(new ContentValues())
                 .start();
 
-        assertNull("Task not null", task);
+        assertThat("Task not null", task, is(nullValue()));
     }
 
     @Test(expected = NullPointerException.class)
-    public void test08NoContextForInsert() throws Exception {
+    public void test08NoContextForInsert() {
 
         // Suppressing warning for passing null validated by Android inspections.
         @SuppressWarnings("ConstantConditions")
@@ -221,6 +221,6 @@ public class BasicCRUDInsertTaskTest {
                 .usingValues(new ContentValues())
                 .start();
 
-        assertNull("Task not null", task);
+        assertThat("Task not null", task, is(nullValue()));
     }
 }

@@ -37,10 +37,10 @@ import org.junit.runners.MethodSorters;
 
 import java.util.concurrent.CancellationException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Test BasicCRUUpdateTask, uses a mock content provider as actual interaction
@@ -81,7 +81,7 @@ public class BasicCRUDUpdateTaskTest {
     @Test
     public void test01UpdateAllRows() throws Exception {
 
-        assertNull("Intent not null", receiver.getIntent());
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
 
         BasicCRUDUpdateTask task = new BasicCRUDUpdateTask.Builder(context)
                 .forUri(URI)
@@ -92,16 +92,16 @@ public class BasicCRUDUpdateTaskTest {
         task.get();
 
         Thread.sleep(5);
-        assertNotNull("Intent null", receiver.getIntent());
+        assertThat("Intent null", receiver.getIntent(), is(notNullValue()));
 
         int rows = receiver.getIntent().getIntExtra(BasicCRUDUpdateTask.EXTRA_ROWS, 0);
-        assertEquals("Incorrect rows", TaskMockContentProvider.UPDATE_ALL_RESULT, rows);
+        assertThat("Incorrect rows", rows, is(TaskMockContentProvider.UPDATE_ALL_RESULT));
     }
 
     @Test
     public void test02UpdateById() throws Exception {
 
-        assertNull("Intent not null", receiver.getIntent());
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
 
         BasicCRUDUpdateTask task = new BasicCRUDUpdateTask.Builder(context)
                 .forUri(URI)
@@ -113,15 +113,15 @@ public class BasicCRUDUpdateTaskTest {
         task.get();
 
         Thread.sleep(5);
-        assertNotNull("Intent null", receiver.getIntent());
+        assertThat("Intent null", receiver.getIntent(), is(notNullValue()));
 
         int rows = receiver.getIntent().getIntExtra(BasicCRUDUpdateTask.EXTRA_ROWS, 0);
-        assertEquals("Incorrect rows", 1, rows);
+        assertThat("Incorrect rows", rows, is(1));
     }
 
     @Test
     public void test03UpdateBySelection() throws Exception {
-        assertNull("Intent not null", receiver.getIntent());
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
 
         BasicCRUDUpdateTask task = new BasicCRUDUpdateTask.Builder(context)
                 .forUri(URI)
@@ -134,16 +134,16 @@ public class BasicCRUDUpdateTaskTest {
         task.get();
 
         Thread.sleep(5);
-        assertNotNull("Intent null", receiver.getIntent());
+        assertThat("Intent null", receiver.getIntent(), is(notNullValue()));
 
         int rows = receiver.getIntent().getIntExtra(BasicCRUDUpdateTask.EXTRA_ROWS, 0);
-        assertEquals("Incorrect rows", TaskMockContentProvider.UPDATE_SELECTION_RESULT, rows);
+        assertThat("Incorrect rows", rows, is(TaskMockContentProvider.UPDATE_SELECTION_RESULT));
     }
 
     public void test04UpdateNoBroadcastCancellation() throws Exception {
         boolean cancelled = false;
 
-        assertNull("Intent not null", receiver.getIntent());
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
 
         BasicCRUDUpdateTask task = new BasicCRUDUpdateTask.Builder(context)
                 .forUri(URI)
@@ -151,20 +151,20 @@ public class BasicCRUDUpdateTaskTest {
                 .start();
 
         try {
-            assertTrue(task.cancel(false));
+            assertThat(task.cancel(false), is(true));
             task.get();
         }
         catch (CancellationException e) {
             cancelled = true;
         }
 
-        assertNull("Intent not null", receiver.getIntent());
-        assertTrue("Task not cancelled", cancelled);
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
+        assertThat("Task not cancelled", cancelled, is(true));
     }
 
     @Test
     public void test05UpdateWithBroadcastCancelled() throws Exception {
-        assertNull("Intent not null", receiver.getIntent());
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
 
         boolean cancelled = false;
         BasicCRUDUpdateTask task = new BasicCRUDUpdateTask.Builder(context)
@@ -174,20 +174,20 @@ public class BasicCRUDUpdateTaskTest {
                 .start();
 
         try {
-            assertTrue(task.cancel(false));
+            assertThat(task.cancel(false), is(true));
             task.get();
         }
         catch (CancellationException e) {
             cancelled = true;
         }
 
-        assertNull("Intent not null", receiver.getIntent());
-        assertTrue("Task not cancelled", cancelled);
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
+        assertThat("Task not cancelled", cancelled, is(true));
     }
 
     @Test
     public void test06UpdateNoBroadcast() throws Exception {
-        assertNull("Intent not null", receiver.getIntent());
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
 
         BasicCRUDUpdateTask task = new BasicCRUDUpdateTask.Builder(context)
                 .forUri(URI)
@@ -197,31 +197,31 @@ public class BasicCRUDUpdateTaskTest {
         task.get();
 
         Thread.sleep(5);
-        assertNull("Intent not null", receiver.getIntent());
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
     }
 
     @Test(expected = IllegalStateException.class)
-    public void test07NoContentValuesForUpdate() throws Exception {
+    public void test07NoContentValuesForUpdate() {
 
         BasicCRUDUpdateTask task = new BasicCRUDUpdateTask.Builder(context)
                 .forUri(URI)
                 .start();
 
-        assertNull("Task not null", task);
+        assertThat("Task not null", task, is(nullValue()));
     }
 
     @Test(expected = IllegalStateException.class)
-    public void test08NoUriForUpdate() throws Exception {
+    public void test08NoUriForUpdate() {
 
         BasicCRUDUpdateTask task = new BasicCRUDUpdateTask.Builder(context)
                 .usingValues(new ContentValues())
                 .start();
 
-        assertNull("Task not null", task);
+        assertThat("Task not null", task, is(nullValue()));
     }
 
     @Test(expected = NullPointerException.class)
-    public void test09NoContextForUpdate() throws Exception {
+    public void test09NoContextForUpdate() {
 
         // Suppressing warning for passing null validated by Android inspections.
         @SuppressWarnings("ConstantConditions")
@@ -230,17 +230,17 @@ public class BasicCRUDUpdateTaskTest {
                 .usingValues(new ContentValues())
                 .start();
 
-        assertNull("Task not null", task);
+        assertThat("Task not null", task, is(nullValue()));
     }
 
     @Test(expected = IllegalStateException.class)
-    public void test10BothIdAndSelectionInUpdate() throws Exception {
+    public void test10BothIdAndSelectionInUpdate() {
         BasicCRUDUpdateTask task = new BasicCRUDUpdateTask.Builder(context)
                 .usingValues(new ContentValues())
                 .whereMatchesId(3)
                 .whereMatchesSelection("column1 = ?", "test")
                 .start();
 
-        assertNull("Task not null", task);
+        assertThat("Task not null", task, is(nullValue()));
     }
 }

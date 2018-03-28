@@ -36,10 +36,11 @@ import org.junit.runners.MethodSorters;
 
 import java.util.concurrent.CancellationException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 
 /**
  * Test BasicCRUDeleteTask, uses a mock content provider as actual interaction
@@ -80,7 +81,7 @@ public class BasicCRUDDeleteTaskTest {
     @Test
     public void test01DeleteAllRows() throws Exception {
 
-        assertNull("Intent not null", receiver.getIntent());
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
 
         BasicCRUDDeleteTask task = new BasicCRUDDeleteTask.Builder(context)
                 .forUri(URI)
@@ -90,16 +91,16 @@ public class BasicCRUDDeleteTaskTest {
         task.get();
 
         Thread.sleep(5);
-        assertNotNull("Intent null", receiver.getIntent());
+        assertThat("Intent null", receiver.getIntent(), is(notNullValue()));
 
         int rows = receiver.getIntent().getIntExtra(BasicCRUDDeleteTask.EXTRA_ROWS, 0);
-        assertEquals("Incorrect rows", TaskMockContentProvider.DELETE_ALL_RESULT, rows);
+        assertThat("Incorrect rows", rows, is(TaskMockContentProvider.DELETE_ALL_RESULT));
     }
 
     @Test
     public void test02DeleteById() throws Exception {
 
-        assertNull("Intent not null", receiver.getIntent());
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
 
         BasicCRUDDeleteTask task = new BasicCRUDDeleteTask.Builder(context)
                 .forUri(URI)
@@ -110,16 +111,16 @@ public class BasicCRUDDeleteTaskTest {
         task.get();
 
         Thread.sleep(5);
-        assertNotNull("Intent null", receiver.getIntent());
+        assertThat("Intent null", receiver.getIntent(), is(notNullValue()));
 
         int rows = receiver.getIntent().getIntExtra(BasicCRUDDeleteTask.EXTRA_ROWS, 0);
-        assertEquals("Incorrect rows", 1, rows);
+        assertThat("Incorrect rows", rows, is(1));
     }
 
     @Test
     public void test03DeleteBySelection() throws Exception {
 
-        assertNull("Intent not null", receiver.getIntent());
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
 
         BasicCRUDDeleteTask task = new BasicCRUDDeleteTask.Builder(context)
                 .forUri(URI)
@@ -130,15 +131,15 @@ public class BasicCRUDDeleteTaskTest {
         task.get();
 
         Thread.sleep(5);
-        assertNotNull("Intent null", receiver.getIntent());
+        assertThat("Intent null", receiver.getIntent(), is(notNullValue()));
 
         int rows = receiver.getIntent().getIntExtra(BasicCRUDDeleteTask.EXTRA_ROWS, 0);
-        assertEquals("Incorrect rows", TaskMockContentProvider.DELETE_SELECTION_RESULT, rows);
+        assertThat("Incorrect rows", rows, is(TaskMockContentProvider.DELETE_SELECTION_RESULT));
     }
 
     @Test
     public void test04DeleteCancelled() throws Exception {
-        assertNull("Intent not null", receiver.getIntent());
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
 
         boolean cancelled = false;
         BasicCRUDDeleteTask task = new BasicCRUDDeleteTask.Builder(context)
@@ -147,20 +148,20 @@ public class BasicCRUDDeleteTaskTest {
                 .start();
 
         try {
-            assertTrue(task.cancel(false));
+            assertThat(task.cancel(false), is(true));
             task.get();
         }
         catch (CancellationException e) {
             cancelled = true;
         }
 
-        assertNull("Intent not null", receiver.getIntent());
-        assertTrue("Task not cancelled", cancelled);
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
+        assertThat("Task not cancelled", cancelled, is(true));
     }
 
     @Test
     public void test05DeleteWithBroadcastCancelled() throws Exception {
-        assertNull("Intent not null", receiver.getIntent());
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
 
         boolean cancelled = false;
         BasicCRUDDeleteTask task = new BasicCRUDDeleteTask.Builder(context)
@@ -169,20 +170,20 @@ public class BasicCRUDDeleteTaskTest {
                 .start();
 
         try {
-            assertTrue(task.cancel(false));
+            assertThat(task.cancel(false), is(true));
             task.get();
         }
         catch (CancellationException e) {
             cancelled = true;
         }
 
-        assertNull("Intent not null", receiver.getIntent());
-        assertTrue("Task not cancelled", cancelled);
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
+        assertThat("Task not cancelled", cancelled, is(true));
     }
 
     @Test
     public void test06DeleteNoBroadcast() throws Exception {
-        assertNull("Intent not null", receiver.getIntent());
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
 
         BasicCRUDDeleteTask task = new BasicCRUDDeleteTask.Builder(context)
                 .forUri(URI)
@@ -191,20 +192,20 @@ public class BasicCRUDDeleteTaskTest {
         task.get();
 
         Thread.sleep(5);
-        assertNull("Intent not null", receiver.getIntent());
+        assertThat("Intent not null", receiver.getIntent(), is(nullValue()));
     }
 
     @Test(expected = IllegalStateException.class)
-    public void test07NoUriForDelete() throws Exception {
+    public void test07NoUriForDelete() {
 
         BasicCRUDDeleteTask task = new BasicCRUDDeleteTask.Builder(context)
                 .start();
 
-        assertNull("Task not null", task);
+        assertThat("Task not null", task, is(nullValue()));
     }
 
     @Test(expected = NullPointerException.class)
-    public void test08NoContextForDelete() throws Exception {
+    public void test08NoContextForDelete() {
 
         // Suppressing warning for passing null validated by Android inspections.
         @SuppressWarnings("ConstantConditions")
@@ -212,16 +213,16 @@ public class BasicCRUDDeleteTaskTest {
                 .forUri(URI)
                 .start();
 
-        assertNull("Task not null", task);
+        assertThat("Task not null", task, is(nullValue()));
     }
 
     @Test(expected = IllegalStateException.class)
-    public void test09BothIdAndSelectionInUpdate() throws Exception {
+    public void test09BothIdAndSelectionInUpdate() {
         BasicCRUDDeleteTask task = new BasicCRUDDeleteTask.Builder(context)
                 .whereMatchesId(3)
                 .whereMatchesSelection("column1 = ?", "test")
                 .start();
 
-        assertNull("Task not null", task);
+        assertThat("Task not null", task, is(nullValue()));
     }
 }
