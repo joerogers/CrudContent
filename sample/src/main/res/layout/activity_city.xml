@@ -57,7 +57,7 @@
                 android:layout_marginLeft="@dimen/activity_horizontal_margin"
                 android:layout_marginRight="@dimen/activity_horizontal_margin"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:onItemSelected="@{listeners::onSortOrderSelected}"
+                android:onItemSelected="@{(parent, view, position, id)->listeners.onSortOrderSelected(position)}"
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
         </android.support.design.widget.AppBarLayout>
 

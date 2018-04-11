@@ -27,8 +27,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
-import android.widget.AdapterView;
 
 import com.example.crudcontent.BuildConfig;
 import com.example.crudcontent.R;
@@ -120,8 +118,8 @@ public class CityActivity extends AppCompatActivity
         startActivity(EditCityActivity.buildIntent(this));
     }
 
-    @SuppressWarnings("unused")   // Called via data binding
-    public void onSortOrderSelected(AdapterView<?> parent, View view, int position, long id) {
+    // Called via data binding
+    public void onSortOrderSelected(int position) {
         sortOrder = position;
         updateSortOrder(position);
     }
