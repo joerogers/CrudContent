@@ -40,6 +40,8 @@ dependencies {
     implementation "com.android.support:appcompat-v7:${supportLibVersion}"
     implementation "com.android.support:design:${supportLibVersion}"
 
+    implementation "com.forkingcode.crudcontent:crudcontent:1.3.1"
+
     // Use this to compile directly with project
-    implementation project(':crudcontent')
+    // implementation project(':crudcontent')
 }
