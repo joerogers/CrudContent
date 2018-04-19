@@ -37,23 +37,25 @@ public class BasicCRUDDeleteTask extends AsyncTask<BasicCRUDDeleteTask.Builder, 
      * The {@link android.content.Intent} action sent via {@link android.support.v4.content.LocalBroadcastManager} when
      * the delete operation is complete and requested
      */
+    @NonNull
     public static final String DELETE_COMPLETE_ACTION = "com.forkingcode.crudcontent.action.delete_complete";
 
     /**
      * The extra indicating the number of rows deleted
      */
+    @NonNull
     public static final String EXTRA_ROWS = "com.forkingcode.crudcontent.extra.rows";
 
     /**
      * Builder used to create a new delete task
      */
     public static class Builder {
-        private final Context applicationContext;
-        private Uri uri;
-        private long rowId = 0;
-        private String selection = null;
-        private String[] selectionArgs = null;
-        private boolean resultBroadcastRequested = false;
+        /* package */ final Context applicationContext;
+        /* package */ Uri uri;
+        /* package */ long rowId = 0;
+        /* package */ String selection = null;
+        /* package */ String[] selectionArgs = null;
+        /* package */ boolean resultBroadcastRequested = false;
 
         /**
          * Create a new delete task builder
@@ -74,7 +76,7 @@ public class BasicCRUDDeleteTask extends AsyncTask<BasicCRUDDeleteTask.Builder, 
          * @return This builder object
          */
         @NonNull
-        public Builder forUri(Uri uri) {
+        public Builder forUri(@NonNull Uri uri) {
             this.uri = uri;
             return this;
         }
@@ -93,6 +95,7 @@ public class BasicCRUDDeleteTask extends AsyncTask<BasicCRUDDeleteTask.Builder, 
          * @param rowId The id of the row to select from the database
          * @return This builder object
          */
+        @NonNull
         public Builder whereMatchesId(long rowId) {
             this.rowId = rowId;
             return this;
@@ -114,6 +117,7 @@ public class BasicCRUDDeleteTask extends AsyncTask<BasicCRUDDeleteTask.Builder, 
          *                      to be replaced.
          * @return This builder object
          */
+        @NonNull
         public Builder whereMatchesSelection(@NonNull String selection, @Nullable String... selectionArgs) {
             this.selection = selection;
             this.selectionArgs = selectionArgs;
@@ -128,6 +132,7 @@ public class BasicCRUDDeleteTask extends AsyncTask<BasicCRUDDeleteTask.Builder, 
          * @return this intent builder
          * @see android.support.v4.content.LocalBroadcastManager
          */
+        @NonNull
         public Builder requestResultBroadcast() {
             resultBroadcastRequested = true;
             return this;
@@ -139,6 +144,7 @@ public class BasicCRUDDeleteTask extends AsyncTask<BasicCRUDDeleteTask.Builder, 
          * @return An instance of the BasicCRUDDeleteTask that could be used for cancellation
          * @throws IllegalStateException if uri or on or more ContentValues was not provided
          */
+        @NonNull
         public BasicCRUDDeleteTask start() {
             if (uri == null) {
                 throw new IllegalStateException("Must provide URI");
@@ -153,13 +159,15 @@ public class BasicCRUDDeleteTask extends AsyncTask<BasicCRUDDeleteTask.Builder, 
         }
     }
 
-    private BasicCRUDDeleteTask() {
+    /* package */ BasicCRUDDeleteTask() {
     }
 
     @Override
-    protected Void doInBackground(Builder... builders) {
-        Builder builder = builders[0];
+    @Nullable
+    protected Void doInBackground(@Nullable Builder... builders) {
+        if (builders == null) return null;
 
+        Builder builder = builders[0];
 
         if (isCancelled()) {
             return null;

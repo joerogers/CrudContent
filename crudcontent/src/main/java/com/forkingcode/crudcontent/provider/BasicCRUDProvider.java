@@ -82,11 +82,13 @@ public abstract class BasicCRUDProvider extends ContentProvider {
      * Parameter constant used to request a distinct query. The parameter value must be "true" to ensure the
      * distinct request is honored.
      */
+    @NonNull
     public static final String DISTINCT_PARAMETER = "distinct";
 
     /**
      * Parameter constant used to request a query limit. The parameter value must be an integer &gt; 0
      */
+    @NonNull
     public static final String LIMIT_PARAMETER = "limit";
 
     /**
@@ -150,7 +152,7 @@ public abstract class BasicCRUDProvider extends ContentProvider {
      *
      * @param authority Name of the authority associated with your provider
      */
-    public BasicCRUDProvider(String authority) {
+    public BasicCRUDProvider(@NonNull String authority) {
         this.authority = authority;
         uriMatcher.addURI(authority, "*", ALL_ROWS);
         uriMatcher.addURI(authority, "*/#", ROW_BY_ID);

@@ -42,8 +42,8 @@ public class CityActivity extends AppCompatActivity
     private static final String STATE_SORT_ORDER = "sortOrder";
 
     private static final IntentFilter INSERT_FILTER = new IntentFilter(BasicCRUDInsertTask.INSERT_COMPLETE_ACTION);
-    private static boolean createdStates = false;
-    private CityActivityBinding binding;
+    /* package */ static boolean createdStates = false;
+    /* package */ CityActivityBinding binding;
     private BroadcastReceiver receiver;
     private int sortOrder = 0;
 

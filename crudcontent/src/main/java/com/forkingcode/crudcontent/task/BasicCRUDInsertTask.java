@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 
 /**
@@ -36,26 +37,29 @@ public class BasicCRUDInsertTask extends AsyncTask<BasicCRUDInsertTask.Builder, 
      * The {@link android.content.Intent} action sent via {@link android.support.v4.content.LocalBroadcastManager} when
      * the insert operation is complete and requested
      */
+    @NonNull
     public static final String INSERT_COMPLETE_ACTION = "com.forkingcode.crudcontent.action.insert_complete";
 
     /**
      * The extra indicating the number uri of the inserted row when a single item is inserted
      */
+    @NonNull
     public static final String EXTRA_URI = "com.forkingcode.crudcontent.extra.uri";
 
     /**
      * The extra indicating the number of rows inserted or bulk inserted
      */
+    @NonNull
     public static final String EXTRA_ROWS = "com.forkingcode.crudcontent.extra.rows";
 
     /**
      * Builder used to create a new insert task
      */
     public static class Builder {
-        private final Context applicationContext;
-        private Uri uri;
-        private ContentValues[] valuesArray;
-        private boolean resultBroadcastRequested = false;
+        /* package */ final Context applicationContext;
+        /* package */ Uri uri;
+        /* package */ ContentValues[] valuesArray;
+        /* package */ boolean resultBroadcastRequested = false;
 
         /**
          * Create a new insert task builder
@@ -77,7 +81,7 @@ public class BasicCRUDInsertTask extends AsyncTask<BasicCRUDInsertTask.Builder, 
          * @return This builder object
          */
         @NonNull
-        public Builder forUri(Uri uri) {
+        public Builder forUri(@NonNull Uri uri) {
             this.uri = uri;
             return this;
         }
@@ -100,6 +104,7 @@ public class BasicCRUDInsertTask extends AsyncTask<BasicCRUDInsertTask.Builder, 
          * @param values The content values array indicating the columns/value pairs for the operation
          * @return this intent builder
          */
+        @NonNull
         public Builder usingValues(@NonNull ContentValues[] values) {
             valuesArray = values;
             return this;
@@ -114,6 +119,7 @@ public class BasicCRUDInsertTask extends AsyncTask<BasicCRUDInsertTask.Builder, 
          * @return this intent builder
          * @see android.support.v4.content.LocalBroadcastManager
          */
+        @NonNull
         public Builder requestResultBroadcast() {
             resultBroadcastRequested = true;
             return this;
@@ -125,6 +131,7 @@ public class BasicCRUDInsertTask extends AsyncTask<BasicCRUDInsertTask.Builder, 
          * @return An instance of the BasicCRUDInsertTask that could be used for cancellation
          * @throws IllegalStateException if uri or on or more ContentValues was not provided
          */
+        @NonNull
         public BasicCRUDInsertTask start() {
             if (uri == null) {
                 throw new IllegalStateException("Must provide URI");
@@ -139,11 +146,14 @@ public class BasicCRUDInsertTask extends AsyncTask<BasicCRUDInsertTask.Builder, 
         }
     }
 
-    private BasicCRUDInsertTask() {
+    /* package */ BasicCRUDInsertTask() {
     }
 
     @Override
-    protected Void doInBackground(Builder... builders) {
+    @Nullable
+    protected Void doInBackground(@Nullable Builder... builders) {
+        if (builders == null) return null;
+
         Builder builder = builders[0];
 
         Uri uri = null;

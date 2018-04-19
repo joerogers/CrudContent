@@ -38,24 +38,26 @@ public class BasicCRUDUpdateTask extends AsyncTask<BasicCRUDUpdateTask.Builder, 
      * The {@link android.content.Intent} action sent via {@link android.support.v4.content.LocalBroadcastManager} when
      * the update operation is complete and requested
      */
+    @NonNull
     public static final String UPDATE_COMPLETE_ACTION = "com.forkingcode.crudcontent.action.update_complete";
 
     /**
      * The extra indicating the number of rows updated
      */
+    @NonNull
     public static final String EXTRA_ROWS = "com.forkingcode.crudcontent.extra.rows";
 
     /**
      * Builder used to create a new update task
      */
     public static class Builder {
-        private final Context applicationContext;
-        private Uri uri;
-        private long rowId = 0;
-        private String selection = null;
-        private String[] selectionArgs = null;
-        private ContentValues values;
-        private boolean resultBroadcastRequested = false;
+        /* package */ final Context applicationContext;
+        /* package */ Uri uri;
+        /* package */ long rowId = 0;
+        /* package */ String selection = null;
+        /* package */ String[] selectionArgs = null;
+        /* package */ ContentValues values;
+        /* package */ boolean resultBroadcastRequested = false;
 
         /**
          * Create a new update task builder
@@ -76,7 +78,7 @@ public class BasicCRUDUpdateTask extends AsyncTask<BasicCRUDUpdateTask.Builder, 
          * @return This builder object
          */
         @NonNull
-        public Builder forUri(Uri uri) {
+        public Builder forUri(@NonNull Uri uri) {
             this.uri = uri;
             return this;
         }
@@ -107,6 +109,7 @@ public class BasicCRUDUpdateTask extends AsyncTask<BasicCRUDUpdateTask.Builder, 
          * @param rowId The id of the row to select from the database
          * @return This builder object
          */
+        @NonNull
         public Builder whereMatchesId(long rowId) {
             this.rowId = rowId;
             return this;
@@ -128,6 +131,7 @@ public class BasicCRUDUpdateTask extends AsyncTask<BasicCRUDUpdateTask.Builder, 
          *                      to be replaced.
          * @return This builder object
          */
+        @NonNull
         public Builder whereMatchesSelection(@NonNull String selection, @Nullable String... selectionArgs) {
             this.selection = selection;
             this.selectionArgs = selectionArgs;
@@ -142,6 +146,7 @@ public class BasicCRUDUpdateTask extends AsyncTask<BasicCRUDUpdateTask.Builder, 
          * @return this intent builder
          * @see android.support.v4.content.LocalBroadcastManager
          */
+        @NonNull
         public Builder requestResultBroadcast() {
             resultBroadcastRequested = true;
             return this;
@@ -154,6 +159,7 @@ public class BasicCRUDUpdateTask extends AsyncTask<BasicCRUDUpdateTask.Builder, 
          * @throws IllegalStateException If conditions for uri, values, rowId and/or selection are
          * not met per individual method descriptions
          */
+        @NonNull
         public BasicCRUDUpdateTask start() {
             if (uri == null) {
                 throw new IllegalStateException("Must provide URI");
@@ -171,11 +177,14 @@ public class BasicCRUDUpdateTask extends AsyncTask<BasicCRUDUpdateTask.Builder, 
         }
     }
 
-    private BasicCRUDUpdateTask() {
+    /* package */ BasicCRUDUpdateTask() {
     }
 
     @Override
-    protected Void doInBackground(Builder... builders) {
+    @Nullable
+    protected Void doInBackground(@Nullable Builder... builders) {
+        if (builders == null) return null;
+
         Builder builder = builders[0];
 
         if (isCancelled()) {
