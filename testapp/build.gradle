@@ -28,5 +28,6 @@ dependencies {
     androidTestImplementation "com.android.support:support-annotations:${supportLibVersion}"
     androidTestImplementation "com.android.support.test:runner:${testLibVersion}"
     androidTestImplementation "com.android.support.test:rules:${testLibVersion}"
+    androidTestImplementation "org.hamcrest:hamcrest-library:1.3"
 
 }
