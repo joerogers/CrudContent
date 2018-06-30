@@ -31,6 +31,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.BaseColumns;
+import android.support.annotation.CheckResult;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -300,8 +301,11 @@ public abstract class BasicCRUDProvider extends ContentProvider {
 
         long id;
 
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        db.acquireReference();
+        SQLiteDatabase db = getWritableDatabaseWithReference();
+        if (db == null) {
+            return null;
+        }
+
         try {
             int conflictAlgorithm = translateConflictAlgorithm(getInsertConflictAlgorithm(table));
             startTransaction(db);
@@ -362,10 +366,11 @@ public abstract class BasicCRUDProvider extends ContentProvider {
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
 
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-
         int count = 0;
-        db.acquireReference();
+
+        SQLiteDatabase db = getWritableDatabaseWithReference();
+        if (db == null) return count;
+
         try {
             startTransaction(db);
             try {
@@ -473,8 +478,8 @@ public abstract class BasicCRUDProvider extends ContentProvider {
             limit = uri.getQueryParameter(LIMIT_PARAMETER);
         }
 
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        db.acquireReference();
+        SQLiteDatabase db = getReadableDatabaseWithReference();
+        if (db == null) return null;
 
         Cursor cursor;
         try {
@@ -550,9 +555,8 @@ public abstract class BasicCRUDProvider extends ContentProvider {
         }
 
         int rows = 0;
-
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        db.acquireReference();
+        SQLiteDatabase db = getWritableDatabaseWithReference();
+        if (db == null) return rows;
 
         try {
             startTransaction(db);
@@ -622,8 +626,9 @@ public abstract class BasicCRUDProvider extends ContentProvider {
         }
 
         int rows = 0;
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        db.acquireReference();
+        SQLiteDatabase db = getWritableDatabaseWithReference();
+        if (db == null) return rows;
+
         try {
             startTransaction(db);
             try {
@@ -701,6 +706,57 @@ public abstract class BasicCRUDProvider extends ContentProvider {
     private static void notifyChange(@Nullable Context context, @NonNull Uri uri) {
         if (context != null) {
             context.getContentResolver().notifyChange(uri, null, false);
+        }
+    }
+
+    @Nullable
+    private SQLiteDatabase getReadableDatabaseWithReference() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        if (acquireReferenceSafely(db)) {
+            return db;
+        }
+
+        // Try one more time...
+        db = dbHelper.getReadableDatabase();
+        if (acquireReferenceSafely(db)) {
+            return db;
+        }
+        if (LOGGING_ENABLED) {
+            Log.w(TAG, "getReadableDatabaseWithReference: failed to acquire database");
+        }
+        return null;
+    }
+
+    @Nullable
+    private SQLiteDatabase getWritableDatabaseWithReference() {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        if (acquireReferenceSafely(db)) {
+            return db;
+        }
+
+        // Try one more time...
+        db = dbHelper.getWritableDatabase();
+        if (acquireReferenceSafely(db)) {
+            return db;
+        }
+        if (LOGGING_ENABLED) {
+            Log.w(TAG, "getWritableDatabaseWithReference: failed to acquire database");
+        }
+        return null;
+    }
+
+    @CheckResult
+    private static boolean acquireReferenceSafely(@NonNull SQLiteDatabase db) {
+        try {
+            db.acquireReference();
+            return true;
+        }
+        catch (Exception e) {
+            if (LOGGING_ENABLED) {
+                Log.w(TAG, "acquireReferenceSafely: failed: ", e);
+            }
+            return false;
         }
     }
 
