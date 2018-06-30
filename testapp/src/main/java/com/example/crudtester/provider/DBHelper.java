@@ -30,6 +30,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "Test.db";
 
+    private int errorCount;
     private static DBHelper dbHelper;
 
     public static synchronized DBHelper getInstance(Context context) {
@@ -77,5 +78,34 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // No implementation for sample. However, if updating your database version, you
         // should implement the schema changes here.
+    }
+
+    // Helper methods to simulate errors...
+    public void setErrorCount(int errorCount) {
+        this.errorCount = errorCount;
+    }
+
+    // If need to generate error, release the reference on the DB being returned which
+    // will cause it to close...
+    @Override
+    public SQLiteDatabase getWritableDatabase() {
+        SQLiteDatabase db = super.getWritableDatabase();
+        if (errorCount > 0) {
+            db.releaseReference();
+            --errorCount;
+        }
+        return db;
+    }
+
+    // If need to generate error, release the reference on the DB being returned which
+    // will cause it to close...
+    @Override
+    public SQLiteDatabase getReadableDatabase() {
+        SQLiteDatabase db = super.getReadableDatabase();
+        if (errorCount > 0) {
+            db.releaseReference();
+            --errorCount;
+        }
+        return db;
     }
 }
