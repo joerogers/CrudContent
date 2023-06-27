@@ -1,6 +1,8 @@
-# CrudContent
+# DEPRECATED
 
-[ ![Download](https://api.bintray.com/packages/joerogers/maven/crudcontent/images/download.svg) ](https://bintray.com/joerogers/maven/crudcontent/_latestVersion)
+Recommend using Room instead. This library originated before Room was written, but is much more limited in functionality.
+
+# CrudContent
 
 Gradle
 ------
